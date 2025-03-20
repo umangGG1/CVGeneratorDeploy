@@ -378,7 +378,7 @@ class CVGenerator:
                     {"role": "system", "content": "You are an expert CV writer specializing in concise professional profiles."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.4
+                temperature=0.1
             )
             
             condensed_profile = response.choices[0].message.content.strip()

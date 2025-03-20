@@ -2,6 +2,7 @@
 Main workflow orchestrator for CV generation process.
 """
 import os
+import json
 from typing import Dict, List, Any, Optional, Tuple
 
 from models.data_models import ExtractedData, TranscriptInsights, GoalsData, AnalysisResults
@@ -150,11 +151,22 @@ class CVGenerationWorkflow:
             self.process_input_documents()
             
             # Step 2: Analyze content
-            self.analyze_content()
+            analysis_results = self.analyze_content()
             
             # Step 3: Generate CVs
             standard_cv, visual_cv = self.generate_cvs()
             
+            # Step 4: Save processed data to JSON file
+            processed_data = {
+                "extracted_data": self.document_processor.extracted_data.dict(),
+                "analysis_results": analysis_results.dict()
+            }
+            
+            output_file = os.path.join(OUTPUT_DIR, "processed_data.json")
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(processed_data, f, indent=4, ensure_ascii=False)
+            
+            logger.info(f"Processed data saved to {output_file}")
             logger.info("Full workflow completed successfully")
             return standard_cv, visual_cv
         except Exception as e:

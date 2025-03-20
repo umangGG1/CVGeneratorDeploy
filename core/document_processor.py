@@ -94,7 +94,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information from LinkedIn profiles."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1
+                temperature=0.0
             )
             
             content = response.choices[0].message.content.strip()
@@ -155,7 +155,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information from CVs and resumes."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1
+                temperature=0.0
             )
             
             content = response.choices[0].message.content.strip()
@@ -212,7 +212,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert career coach assistant that extracts key information from meeting transcripts."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1
+                temperature=0.0
             )
             
             content = response.choices[0].message.content.strip()
@@ -271,7 +271,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information about professional goals and aspirations."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1
+                temperature=0.0
             )
             
             content = response.choices[0].message.content.strip()
@@ -378,7 +378,13 @@ class DocumentProcessor:
                 personal_info = cv_data["personal_info"]
                 if isinstance(personal_info, dict):
                     self.extracted_data.personal_info.name = personal_info.get("name", "")
-                    self.extracted_data.personal_info.current_headline = personal_info.get("professional_title", "")
+                    new_headline = personal_info.get("professional_title", "")
+                    if new_headline:
+                        if self.extracted_data.personal_info.current_headline:
+                            self.extracted_data.personal_info.current_headline += " | " + new_headline
+                        else:
+                            self.extracted_data.personal_info.current_headline = new_headline
+
                     self.extracted_data.personal_info.contact_info = {
                         k: v for k, v in personal_info.items() 
                         if k not in ["name", "professional_title"]

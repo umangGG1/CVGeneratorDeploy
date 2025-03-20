@@ -29,6 +29,7 @@ class Education(BaseModel):
     institution: str = ""
     dates: str = ""
     details: str = ""
+    location: str = ""
 
 
 class Language(BaseModel):
