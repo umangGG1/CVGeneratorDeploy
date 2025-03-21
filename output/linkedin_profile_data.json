@@ -1,0 +1,63 @@
+{
+  "name": "Roma Kay",
+  "headline": "Vice President - Global Sales Operations at Wesco",
+  "top_skills": [
+    "Sales Operations",
+    "Account Management",
+    "Solution Selling"
+  ],
+  "certifications": [],
+  "contact": {
+    "linkedin": "www.linkedin.com/in/romakay"
+  },
+  "current_location": "Mississauga, Ontario, Canada",
+  "summary": "During my tenure as Vice President of Global Sales Operations, I have spearheaded numerous initiatives that drive both business growth and operational excellence. Our success is anchored in a strategic approach to account management and solution selling, key competencies that I have honed and developed through my extensive experience in sales leadership. My role encompasses the overseeing and management of global and complex projects, covering all aspects of compliance, tax, and optimal ways to support the overall deployment of global projects. This involves ensuring that our operations adhere to regulatory requirements while maximizing efficiency and effectiveness. Post-merger with Anixter, my focus has been on integrating a comprehensive product and services portfolio, while fostering cross-functional relationships. This collaborative effort has not only expanded our market presence but also reinforced Wesco's standing as a Fortune 500 entity, showcasing a commitment to innovation and customer-centric solutions.",
+  "experience": [
+    {
+      "company_title": "Wesco",
+      "job_title": "VP Global Sales Operations",
+      "location": "Toronto, Canada Area",
+      "timeline": "2020 - Present (5 years)",
+      "description": "Wesco International builds, connects, powers and protects the world. Headquartered in Pittsburgh, Pennsylvania, Wesco is a FORTUNE 500® company with more than $22 billion in annual sales and a leading provider of business-to-business distribution, logistics services and supply chain solutions. Wesco offers a best-in-class product and services portfolio of Electrical and Electronic Solutions, Communications and Security Solutions, and Utility and Broadband Solutions. The Company employs approximately 20,000 people, partners with the industry's premier suppliers, and serves thousands of customers around the world. With millions of products, end-to-end supply chain services, and leading digital capabilities, Wesco provides innovative solutions to meet customer needs across commercial and industrial businesses, contractors, government agencies, educational institutions, telecommunications providers, and utilities."
+    },
+    {
+      "company_title": "Anixter",
+      "job_title": "Vice President - Global Sales Operations",
+      "location": "Greater Chicago Area",
+      "timeline": "2016 - 2020 (4 years)",
+      "description": "In 2020, Wesco acquired Anixter International Inc., a leading global distributor of network & security solutions, electrical & electronic solutions, and utility power solutions. The merger resulted in a combined company with a comprehensive and balanced portfolio that united Wesco's capabilities in industrial, construction, and utility with Anixter’s expertise in data communications, security, and wire and cable."
+    },
+    {
+      "company_title": "Anixter",
+      "job_title": "Director of Sales - IBM Global Program",
+      "location": "Toronto, Canada Area",
+      "timeline": "2011 - 2016 (5 years)",
+      "description": "Worked closely with the VP of sales to help develop, co-ordinate and drive key initiatives within the IBM Global Program. Based on reports from various teams, worked with VP of Sales and VP of Business Development to budget, forecast and prepare business plan. Interacted with various order processing teams in different geographies on all queries, quotes and follow ups on orders. Interacted with various sales teams across North America addressing their questions and providing help as required for various pre and post sales issues. Maintained and updated a central database as a knowledge base for Anixter teams globally. Responsible for maintaining and updating the group’s home page on Anixter’s internal website, including pricing information, vendor information, important notices."
+    },
+    {
+      "company_title": "Anixter",
+      "job_title": "Manager of Business Development - Global Accounts",
+      "timeline": "1998 - 2011 (13 years)",
+      "description": "Supported the IBM Global team within all geos in the day to day quote, orders, invoicing and credit issues. Worked closely with the VP of Sales to ensure all new initiatives within the IBM program were fully documented and rolled out to the various internal sales teams and geo leads within the Anixter/IBM team. Supported IBM on various cabling and security projects. Was responsible for the day to day quotes, vendor pricing, order placement, order updates to the Project Manager, inventory and shipping updates along with Return Material requests and any invoicing issues."
+    },
+    {
+      "company_title": "Anixter",
+      "job_title": "Internal Sales Supervisor",
+      "location": "Middle East",
+      "timeline": "1998 - 2004 (6 years)",
+      "description": "Consistently achieved and exceeded sales targets. Successfully mastered the company’s mainframe computer system for prospecting, quoting customers, processing orders and customer database management. Actively involved in all logistical issues concerning order management from the point of sale to the delivery of goods to the customer and any fault reports/short shipments. Effectively managed customers in different geographical locations like Kenya, Nigeria, Oman, Pakistan, South Africa, Egypt, Bahrain and Saudi Arabia. Successfully managed the System Integrator (SI) Program in partnership between Anixter and Systimax Solutions (formerly Avaya Communications). Responsible for providing sales forecasts to Regional Sales Director with input from partners, an actively managed project board and helped drive the resellers to achieve and exceed these targets."
+    },
+    {
+      "company_title": "British Telecom",
+      "job_title": "Sales Support",
+      "timeline": "1993 - 1998 (5 years)"
+    }
+  ],
+  "education": [
+    {
+      "institution_name": "Bombay University",
+      "degree_name": "Bachelor of Commerce, Accounting",
+      "timeline": "1986 - 1989"
+    }
+  ]
+}

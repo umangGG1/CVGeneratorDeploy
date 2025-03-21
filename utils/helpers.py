@@ -94,6 +94,24 @@ def format_list_as_bullet_string(items: List[str], bullet_char: str = "•") -> 
         return ""
     return f" {bullet_char} ".join(items)
 
+def escape_latex(text: str) -> str:
+    """Escape special LaTeX characters in text."""
+    escapers = {
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+        "\\": r"\textbackslash{}",
+        "<": r"\textless{}",
+        ">": r"\textgreater{}",
+    }
+    return "".join(escapers.get(c, c) for c in text)
+
 def ensure_directory_exists(directory_path: str) -> None:
     """
     Ensure a directory exists, creating it if necessary.
