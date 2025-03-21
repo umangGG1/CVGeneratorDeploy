@@ -161,7 +161,7 @@ class CVGenerationWorkflow:
         Run the complete workflow from document processing to CV generation.
             
         Returns:
-            Tuple of (standard_cv, visual_cv) content
+            Tuple of (standard_cv_pdf_path, visual_cv_pdf_path)
         """
         logger.info("Running full CV generation workflow")
         
@@ -175,10 +175,10 @@ class CVGenerationWorkflow:
             # Step 2: Analyze content
             analysis_results = self.analyze_content()
             
-            # Step 3: Generate CVs
-            standard_cv, visual_cv = self.generate_cvs()
-
-            # standard_cv_pdf, visual_cv_pdf = self.generate_pdf_cvs()
+            # Step 3: Generate CVs using LaTeX generator
+            from core.latex_cv_generator import LaTeXCVGenerator
+            latex_generator = LaTeXCVGenerator(analysis_results, self.document_processor.extracted_data)
+            standard_cv_pdf, visual_cv_pdf = latex_generator.generate_cvs()
             
             # Step 4: Save processed data to JSON file
             processed_data = {
@@ -192,7 +192,7 @@ class CVGenerationWorkflow:
             
             logger.info(f"Processed data saved to {output_file}")
             logger.info("Full workflow completed successfully")
-            return standard_cv, visual_cv
+            return standard_cv_pdf, visual_cv_pdf
         except Exception as e:
             logger.error(f"Error in full workflow: {str(e)}", exc_info=True)
             raise

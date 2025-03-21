@@ -69,6 +69,37 @@ cv_generator/
    OPENAI_API_KEY=your_api_key_here
    OPENAI_MODEL=gpt-4o
    ```
+5. **Install LaTeX**
+   You need a LaTeX distribution installed:
+   - **Windows:** Install [MiKTeX](https://miktex.org/download) or [TeX Live](https://tug.org/texlive/windows.html).
+   - **Linux (Ubuntu/Debian):**
+   ```bash
+   sudo apt update && sudo apt install texlive-latex-base
+   ```
+   - **MacOS:** Install [MacTeX](https://tug.org/mactex/).
+
+6. Ensure `pdflatex` is in **PATH**
+   Run:
+   ```bash
+   pdflatex --version
+   ```
+   If it’s not found, manually add it to your system's PATH.
+
+## Setup
+   ### **1. Modify `possible_paths` in `_get_pdflatex_path`**
+   If you're using Windows, update the `possible_paths` variable in `LaTeXCVGenerator._get_pdflatex_path()` with the correct path to `pdflatex.exe`:
+   ```python
+   possible_paths = [
+      r"C:\\Path\\To\\Your\\MiKTeX\\miktex\\bin\\x64\\pdflatex.exe"
+   ]
+   ```
+   Change the path accordingly based on your system configuration.
+
+   ### **2. Create Required Directories**
+   ```bash
+   mkdir templates output
+   ```
+   Place your LaTeX templates (`standard_cv.tex`, `visual_cv.tex`) inside the `templates` folder.
 
 ## Usage
 
