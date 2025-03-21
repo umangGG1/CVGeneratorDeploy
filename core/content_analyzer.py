@@ -49,6 +49,7 @@ class ContentAnalyzer:
             self._extract_experience_highlights()
             self._identify_achievement_metrics()
             self._format_education_certifications_languages()
+            self._format_interests_and_systems()
             
             # Save analysis results to file
             self._save_analysis_results()
@@ -732,6 +733,55 @@ class ContentAnalyzer:
                 if languages:
                     self.analysis_results.languages_formatted = languages
                     logger.debug(f"Formatted {len(languages)} language entries")
+
+    def _format_interests_and_systems(self) -> None:
+        """
+        Format interests and systems sections and determine which optional section to display
+        based on preference order: Languages > Interests > Systems
+        """
+        logger.info("Formatting interests and systems sections")
+        
+        try:
+            # Process interests if available
+            if self.extracted_data.interests:
+                interests = self.extracted_data.interests
+                
+                if interests:
+                    # Clean and prepare the interest list
+                    clean_interests = [interest.strip() for interest in interests if interest.strip()]
+                    
+                    # Just use the clean interests directly - no need for complex formatting
+                    self.analysis_results.interests_formatted = clean_interests[:7]  # Limit to 7 interests max
+                    logger.debug(f"Formatted {len(self.analysis_results.interests_formatted)} interests")
+            
+            # Process systems/tools if available
+            if self.extracted_data.systems:
+                systems = self.extracted_data.systems
+                
+                if systems:
+                    # Clean and prepare the systems list
+                    clean_systems = [system.strip() for system in systems if system.strip()]
+                    
+                    # Just use the clean systems directly - no need for complex formatting
+                    self.analysis_results.systems_formatted = clean_systems[:7]  # Limit to 7 systems max
+                    logger.debug(f"Formatted {len(self.analysis_results.systems_formatted)} systems")
+            
+            # Determine which section to display based on availability and preference order
+            if self.analysis_results.languages_formatted:
+                self.analysis_results.display_section = "languages"
+                logger.debug("Languages will be displayed")
+            elif self.analysis_results.interests_formatted:
+                self.analysis_results.display_section = "interests"
+                logger.debug("Interests will be displayed")
+            elif self.analysis_results.systems_formatted:
+                self.analysis_results.display_section = "systems"
+                logger.debug("Systems will be displayed")
+            else:
+                self.analysis_results.display_section = ""
+                logger.debug("No optional section available to display")
+        
+        except Exception as e:
+            logger.error(f"Error formatting interests and systems: {str(e)}", exc_info=True)
     
     def _calculate_total_experience(self) -> Optional[int]:
         """
@@ -809,7 +859,10 @@ class ContentAnalyzer:
                 "achievement_metrics": self.analysis_results.achievement_metrics,
                 "education_formatted": self.analysis_results.education_formatted,
                 "certifications_formatted": self.analysis_results.certifications_formatted,
-                "languages_formatted": self.analysis_results.languages_formatted
+                "languages_formatted": self.analysis_results.languages_formatted,
+                "interests_formatted": self.analysis_results.interests_formatted,
+                "systems_formatted": self.analysis_results.systems_formatted,
+                "display_section": self.analysis_results.display_section
             }
             
             # Save to JSON file

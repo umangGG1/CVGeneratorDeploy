@@ -133,6 +133,28 @@ class CVGenerationWorkflow:
         except Exception as e:
             logger.error(f"Error generating CVs: {str(e)}", exc_info=True)
             raise
+
+    def generate_pdf_cvs(self) -> tuple[str, str]:
+        """
+        Generate both standard and visual CVs in PDF format.
+        
+        Returns:
+            Tuple of (standard_cv_pdf_path, visual_cv_pdf_path)
+        """
+        logger.info("Generating PDF CVs")
+        
+        try:
+            if not self.cv_generator:
+                raise ValueError("Content must be analyzed first")
+            
+            # Generate PDF CVs
+            standard_cv_pdf, visual_cv_pdf = self.cv_generator.generate_pdf_cvs()
+            
+            logger.info("PDF CV generation complete")
+            return standard_cv_pdf, visual_cv_pdf
+        except Exception as e:
+            logger.error(f"Error generating PDF CVs: {str(e)}", exc_info=True)
+            raise
     
     def run_full_workflow(self) -> Tuple[str, str]:
         """
@@ -155,6 +177,8 @@ class CVGenerationWorkflow:
             
             # Step 3: Generate CVs
             standard_cv, visual_cv = self.generate_cvs()
+
+            standard_cv_pdf, visual_cv_pdf = self.generate_pdf_cvs()
             
             # Step 4: Save processed data to JSON file
             processed_data = {

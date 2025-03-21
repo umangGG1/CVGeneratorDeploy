@@ -65,14 +65,26 @@ class CVGenerator:
             
             # 6. Generate certifications and training
             certifications = self._generate_certifications_section()
-            cv_components.append(certifications)
+            if certifications:
+                cv_components.append(certifications)
             
-            # 7. Generate languages section
-            languages = self._generate_languages_section()
-            cv_components.append(languages)
+            # 7. Generate optional section based on display_section flag
+            display_section = self.analysis_results.display_section
+            if display_section == "languages":
+                languages = self._generate_languages_section()
+                if languages:
+                    cv_components.append(languages)
+            elif display_section == "interests":
+                interests = self._generate_interests_section()
+                if interests:
+                    cv_components.append(interests)
+            elif display_section == "systems":
+                systems = self._generate_systems_section()
+                if systems:
+                    cv_components.append(systems)
             
-            # Combine all components
-            self.standard_cv = "\n\n".join(cv_components)
+            # Combine all components, filtering out empty strings
+            self.standard_cv = "\n\n".join([comp for comp in cv_components if comp])
             
             # Save to file
             output_path = os.path.join(OUTPUT_DIR, "standard_cv.md")
@@ -84,7 +96,7 @@ class CVGenerator:
         except Exception as e:
             logger.error(f"Error generating standard CV: {str(e)}", exc_info=True)
             raise
-    
+        
     def generate_visual_cv(self) -> str:
         """
         Generate complete visual CV based on standard CV.
@@ -153,16 +165,38 @@ class CVGenerator:
             # Use name from extracted data
             name = self.extracted_data.personal_info.name or "Professional"
             
+            # Get contact info
+            contact_info = self.extracted_data.personal_info.contact_info or {}
+            contact_parts = []
+            
+            # Add email if available
+            if "email" in contact_info and contact_info["email"]:
+                contact_parts.append(contact_info["email"])
+            
+            # Add phone if available
+            if "phone" in contact_info and contact_info["phone"]:
+                contact_parts.append(contact_info["phone"])
+            
+            # Add location if available
+            if "location" in contact_info and contact_info["location"]:
+                contact_parts.append(contact_info["location"])
+            elif all(k in contact_info for k in ["city", "state", "zip"]):
+                if contact_info["city"] and contact_info["state"] and contact_info["zip"]:
+                    contact_parts.append(f"{contact_info['city']}, {contact_info['state']} {contact_info['zip']}")
+            
+            # Format contact info
+            contact_text = " | ".join(contact_parts) if contact_parts else ""
+            
             # Use top headline option if available
             if self.analysis_results.headline_options:
                 headline = self.analysis_results.headline_options[0]  # Use top headline
-                return f"# {name}\n{headline}"
+                return f"# {name}\n{headline}\n{contact_text}"
             else:
                 # Fallback to current role
                 current_role = ""
                 if self.extracted_data.experience:
                     current_role = self.extracted_data.experience[0].title
-                return f"# {name}\n**{current_role}**"
+                return f"# {name}\n**{current_role}**\n{contact_text}"
         except Exception as e:
             logger.error(f"Error generating headline: {str(e)}", exc_info=True)
             return f"# Professional CV"
@@ -323,6 +357,77 @@ class CVGenerator:
         except Exception as e:
             logger.error(f"Error generating languages section: {str(e)}", exc_info=True)
             return ""  # Skip section on error
+        
+    def _generate_interests_section(self) -> str:
+        """
+        Generate interests section.
+        
+        Returns:
+            Formatted interests section
+        """
+        logger.debug("Generating interests section")
+        
+        try:
+            interests = self.analysis_results.interests_formatted
+            
+            if not interests:
+                return ""  # Skip section if no interests
+                    
+            section = "## INTERESTS\n"
+            section += format_list_as_bullet_string(interests)
+            
+            return section
+        except Exception as e:
+            logger.error(f"Error generating interests section: {str(e)}", exc_info=True)
+            return ""  # Skip section on error
+
+    def _generate_systems_section(self) -> str:
+        """
+        Generate systems section.
+        
+        Returns:
+            Formatted systems section
+        """
+        logger.debug("Generating systems section")
+        
+        try:
+            systems = self.analysis_results.systems_formatted
+            
+            if not systems:
+                return ""  # Skip section if no systems
+                    
+            section = "## SYSTEMS\n"
+            section += format_list_as_bullet_string(systems)
+            
+            return section
+        except Exception as e:
+            logger.error(f"Error generating systems section: {str(e)}", exc_info=True)
+            return ""  # Skip section on error
+        
+    def generate_pdf_cvs(self) -> tuple[str, str]:
+        """
+        Generate both standard and visual CVs in PDF format using LaTeX.
+        
+        Returns:
+            Tuple of (standard_cv_pdf_path, visual_cv_pdf_path)
+        """
+        logger.info("Generating PDF CVs with LaTeX")
+        
+        try:
+            # Import the LaTeX generator (import here to avoid circular imports)
+            from core.latex_cv_generator import LaTeXCVGenerator
+            
+            # Create LaTeX generator
+            latex_generator = LaTeXCVGenerator(self.analysis_results, self.extracted_data)
+            
+            # Generate both CVs
+            standard_cv_path, visual_cv_path = latex_generator.generate_cvs()
+            
+            logger.info("PDF CV generation complete")
+            return standard_cv_path, visual_cv_path
+        except Exception as e:
+            logger.error(f"Error generating PDF CVs: {str(e)}", exc_info=True)
+            raise
     
     def _extract_headline_from_standard_cv(self) -> str:
         """
@@ -511,7 +616,6 @@ class CVGenerator:
         try:
             education = self.analysis_results.education_formatted
             certifications = self.analysis_results.certifications_formatted
-            languages = self.analysis_results.languages_formatted
             
             section = ""
             
@@ -529,10 +633,28 @@ class CVGenerator:
                     section += f"● {cert}\n"
                 section += "\n"
             
-            # Add languages if available
-            if languages:
-                section += "## Languages\n"
-                section += format_list_as_bullet_string(languages)
+            # Add interests section if available
+            interests = self.analysis_results.interests_formatted
+            if interests:
+                section += "## Interests\n"
+                for interest in interests:
+                    section += f"● {interest}\n"
+                section += "\n"
+            
+            # Add one optional section based on display_section flag
+            display_section = self.analysis_results.display_section
+            if display_section == "languages":
+                languages = self.analysis_results.languages_formatted
+                if languages:
+                    section += "## Languages\n"
+                    for lang in languages:
+                        section += f"● {lang}\n"
+            elif display_section == "systems":
+                systems = self.analysis_results.systems_formatted
+                if systems:
+                    section += "## Systems\n"
+                    for system in systems:
+                        section += f"● {system}\n"
             
             return section
         except Exception as e:

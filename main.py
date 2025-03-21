@@ -4,6 +4,7 @@ CV Generator - Main Application Entry Point
 
 This script processes PDF files (LinkedIn profile, CV, transcript, etc.) 
 and generates professional standard and visual CVs using LLMs for the extraction process.
+Now with PDF output support following Harvard template format.
 """
 import os
 import sys
@@ -35,6 +36,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--goals", help="Path to professional goals PDF (default: professional_goals.pdf)",
                        default="professional_goals.pdf")
     parser.add_argument("--output", help=f"Output directory (default: {OUTPUT_DIR})")
+    parser.add_argument("--format", choices=["md", "pdf", "both"], default="both",
+                        help="Output format: markdown only, PDF only, or both (default: both)")
     
     return parser.parse_args()
 
@@ -55,11 +58,16 @@ def main():
         workflow = CVGenerationWorkflow()
         
         # Run full workflow
-        standard_cv, visual_cv = workflow.run_full_workflow()
+        standard_cv, visual_cv, standard_cv_pdf, visual_cv_pdf = workflow.run_full_workflow()
         
-        # Print output file paths
-        print(f"Standard CV saved to: {os.path.join(OUTPUT_DIR, 'standard_cv.md')}")
-        print(f"Visual CV saved to: {os.path.join(OUTPUT_DIR, 'visual_cv.md')}")
+        # Print output file paths based on format choice
+        if args.format in ["md", "both"]:
+            print(f"Standard CV saved to: {os.path.join(OUTPUT_DIR, 'standard_cv.md')}")
+            print(f"Visual CV saved to: {os.path.join(OUTPUT_DIR, 'visual_cv.md')}")
+        
+        if args.format in ["pdf", "both"]:
+            print(f"Standard CV PDF saved to: {standard_cv_pdf}")
+            print(f"Visual CV PDF saved to: {visual_cv_pdf}")
         
         return 0
     

@@ -1,0 +1,66 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx} % Required for inserting images
+\setlength{\parindent}{0pt}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[utf8]{inputenc} 
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{lipsum}
+\usepackage[left=1.06cm,top=1.7cm,right=1.06cm,bottom=0.49cm]{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fontawesome}
+
+% Define colors
+\definecolor{primary}{RGB}{41, 128, 185}
+\definecolor{secondary}{RGB}{52, 152, 219}
+
+% Custom section formatting
+\titleformat{\section}
+{\Large\bfseries\color{primary}}
+{}{0em}
+{\vspace{-0.5em}}[\titlerule]
+
+\begin{document}
+
+% Header
+\begin{center}
+    {\Huge\bfseries\color{primary}$name}\\[0.3em]
+    {\large\color{secondary}$contact_info}
+\end{center}
+
+\vspace{1em}
+
+% Profile
+\begin{center}
+    \textit{$profile}
+\end{center}
+
+\vspace{1em}
+
+% Career Achievements
+\section*{Career Achievements}
+$achievements
+
+\vspace{1em}
+
+% Experience
+\section*{Experience}
+$experience
+
+\vspace{1em}
+
+% Skills
+\section*{Skills \& Competencies}
+$skills
+
+\vspace{1em}
+
+% Education
+\section*{Education}
+$education
+
+$optional_section
+
+\end{document} 

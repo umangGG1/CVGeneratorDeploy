@@ -48,6 +48,8 @@ class ExtractedData(BaseModel):
     achievements: List[str] = Field(default_factory=list)
     languages: List[Language] = Field(default_factory=list)
     raw_skills: str = ""
+    interests: List[str] = Field(default_factory=list)
+    systems: List[str] = Field(default_factory=list)
 
 
 class TranscriptInsights(BaseModel):
@@ -58,6 +60,8 @@ class TranscriptInsights(BaseModel):
     achievements: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)
     improvement_areas: List[str] = Field(default_factory=list)
+    interests: List[str] = Field(default_factory=list)
+    systems: List[str] = Field(default_factory=list)
 
 
 class GoalsData(BaseModel):
@@ -68,6 +72,8 @@ class GoalsData(BaseModel):
     unique_value: str = ""
     skills: str = ""
     achievements: str = ""
+    interests: str = ""
+    systems: str = ""
 
 
 class AnalysisResults(BaseModel):
@@ -81,3 +87,6 @@ class AnalysisResults(BaseModel):
     education_formatted: List[str] = Field(default_factory=list)
     certifications_formatted: List[str] = Field(default_factory=list)
     languages_formatted: List[str] = Field(default_factory=list)
+    interests_formatted: List[str] = Field(default_factory=list)
+    systems_formatted: List[str] = Field(default_factory=list)
+    display_section: str = ""  # Can be "languages", "interests", or "systems"

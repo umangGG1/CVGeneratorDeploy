@@ -25,6 +25,9 @@ class DocumentProcessor:
     
     def __init__(self):
         self.extracted_data = ExtractedData()
+        self.output_dir = "output"
+        # Create output directory if it doesn't exist
+        os.makedirs(self.output_dir, exist_ok=True)
         logger.info("DocumentProcessor initialized")
     
     def extract_text_from_pdf(self, pdf_path: str) -> str:
@@ -107,6 +110,12 @@ class DocumentProcessor:
             # Map extracted data to our data model
             self._map_linkedin_data_to_model(profile_data)
             
+            # Save the processed data to a JSON file
+            output_file = os.path.join(self.output_dir, "linkedin_profile_data.json")
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(profile_data, f, indent=2, ensure_ascii=False)
+            logger.info(f"LinkedIn profile data saved to {output_file}")
+            
             logger.info("LinkedIn profile processing complete")
         except Exception as e:
             logger.error(f"Error processing LinkedIn profile: {str(e)}", exc_info=True)
@@ -138,6 +147,8 @@ class DocumentProcessor:
             - certifications/training
             - languages (with proficiency levels if mentioned)
             - achievements/awards
+            - interests/hobbies (any interests or activities mentioned)
+            - systems/tools (any software, platforms, or technical tools the person is familiar with)
             - additional_sections (any other sections present in the CV)
             
             Note: Please extract all details including multiple roles at the same company or multiple degrees from the same institution.
@@ -167,6 +178,12 @@ class DocumentProcessor:
             
             # Map extracted data to our data model
             self._map_cv_data_to_model(cv_data)
+            
+            # Save the processed data to a JSON file
+            output_file = os.path.join(self.output_dir, "cv_data.json")
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(cv_data, f, indent=2, ensure_ascii=False)
+            logger.info(f"CV data saved to {output_file}")
             
             logger.info("CV processing complete")
         except Exception as e:
@@ -363,6 +380,8 @@ class DocumentProcessor:
         except Exception as e:
             logger.error(f"Error mapping LinkedIn data to model: {str(e)}", exc_info=True)
     
+# Fix for the _map_cv_data_to_model method in core/document_processor.py
+
     def _map_cv_data_to_model(self, cv_data: Dict[str, Any]) -> None:
         """
         Map extracted CV data to our data model.
@@ -395,6 +414,12 @@ class DocumentProcessor:
                 self.extracted_data.personal_info.summary = cv_data["summary"]
             elif "profile" in cv_data:
                 self.extracted_data.personal_info.summary = cv_data["profile"]
+            elif "summary/profile" in cv_data:
+                # Handle case where summary is a list
+                if isinstance(cv_data["summary/profile"], list):
+                    self.extracted_data.personal_info.summary = "\n".join(cv_data["summary/profile"])
+                else:
+                    self.extracted_data.personal_info.summary = cv_data["summary/profile"]
             
             # Map skills
             if "skills" in cv_data:
@@ -413,10 +438,10 @@ class DocumentProcessor:
                         continue
                         
                     experience = Experience(
-                        title=exp_data.get("job_title", ""),
-                        company=exp_data.get("company_name", ""),
+                        title=exp_data.get("job_title", "") or exp_data.get("title", ""),
+                        company=exp_data.get("company_name", "") or exp_data.get("company", "") or exp_data.get("company_title", ""),
                         location=exp_data.get("location", ""),
-                        dates=exp_data.get("dates", ""),
+                        dates=exp_data.get("dates", "") or exp_data.get("timeline", ""),
                         description=exp_data.get("description", "")
                     )
                     
@@ -425,7 +450,7 @@ class DocumentProcessor:
                         experience.description += "\n" + "\n".join(exp_data["responsibilities"])
                     
                     # Add achievements if available
-                    if "achievements" in exp_data and isinstance(exp_data["achievements"], list):
+                    if "achievements" in exp_data and isinstance(exp_data["achievements"], list) and exp_data["achievements"]:
                         experience.achievements = exp_data["achievements"]
                     
                     self.extracted_data.experience.append(experience)
@@ -437,10 +462,10 @@ class DocumentProcessor:
                         continue
                         
                     education = Education(
-                        degree=edu_data.get("degree", ""),
-                        institution=edu_data.get("institution", ""),
-                        dates=edu_data.get("dates", ""),
-                        details=edu_data.get("details", "")
+                        degree=edu_data.get("degree", "") or edu_data.get("degree_name", ""),
+                        institution=edu_data.get("institution", "") or edu_data.get("institution_name", ""),
+                        dates=edu_data.get("dates", "") or edu_data.get("timeline", ""),
+                        details=edu_data.get("details", "") or edu_data.get("additional_details", "")
                     )
                     
                     self.extracted_data.education.append(education)
@@ -450,8 +475,8 @@ class DocumentProcessor:
                 certs = cv_data["certifications"]
                 if isinstance(certs, list):
                     self.extracted_data.certifications.extend(certs)
-            elif "certifications_training" in cv_data:
-                certs = cv_data["certifications_training"]
+            elif "certifications_training" in cv_data or "certifications/training" in cv_data:
+                certs = cv_data.get("certifications_training", []) or cv_data.get("certifications/training", [])
                 if isinstance(certs, list):
                     self.extracted_data.certifications.extend(certs)
             
@@ -471,10 +496,28 @@ class DocumentProcessor:
                         self.extracted_data.languages.append(language)
             
             # Map achievements
-            if "achievements" in cv_data or "awards" in cv_data:
-                achievements = cv_data.get("achievements", []) or cv_data.get("awards", [])
+            if "achievements" in cv_data or "awards" in cv_data or "achievements/awards" in cv_data:
+                achievements = cv_data.get("achievements", []) or cv_data.get("awards", []) or cv_data.get("achievements/awards", [])
                 if isinstance(achievements, list):
                     self.extracted_data.achievements.extend(achievements)
+            
+            # Map interests - Multiple potential field names
+            for field in ["interests", "interests/hobbies", "hobbies"]:
+                if field in cv_data:
+                    interests = cv_data[field]
+                    if isinstance(interests, list):
+                        self.extracted_data.interests.extend(interests)
+                    elif isinstance(interests, str):
+                        self.extracted_data.interests.append(interests)
+            
+            # Map systems/tools - Multiple potential field names
+            for field in ["systems", "systems/tools", "tools", "technical_tools"]:
+                if field in cv_data:
+                    systems = cv_data[field]
+                    if isinstance(systems, list):
+                        self.extracted_data.systems.extend(systems)
+                    elif isinstance(systems, str):
+                        self.extracted_data.systems.append(systems)
             
             logger.debug("CV data mapped successfully")
         except Exception as e:
