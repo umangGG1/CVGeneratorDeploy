@@ -80,6 +80,13 @@ class LaTeXCVGenerator:
                 if city and state and zip_code:
                     contact_parts.append(f"{city}, {state} {zip_code}")
             
+            if linkedin := contact_info.get("linkedin"):
+                if not linkedin.startswith("https://"):
+                    linkedin = "https://" + linkedin.lstrip("www.")
+                # Use the actual URL as the display text
+                display_url = linkedin.replace("https://", "").rstrip("/")
+                contact_parts.append(f"\\href{{{escape_latex(linkedin)}}}{{{escape_latex(display_url)}}}")
+            
             return " \\textbullet \\ ".join(contact_parts) if contact_parts else ""
         except Exception as e:
             logger.error(
@@ -92,13 +99,33 @@ class LaTeXCVGenerator:
         """Prepare education section content with LaTeX escaping."""
         try:
             education_text = []
+            
+            # Process each education entry from the formatted data
             for edu in self.analysis_results.education_formatted:
-                lines = [escape_latex(line) for line in edu.strip().split("\n")]
-                if len(lines) > 1:
-                    education_text.append(f"\\textbf{{{lines[1]}}} \\hfill {lines[0]}")
-                else:
-                    education_text.append(lines[0])
-            return "\n\n".join(education_text)
+                # Extract components
+                institution = escape_latex(edu.get("institution", ""))
+                location = escape_latex(edu.get("location", ""))
+                degree = escape_latex(edu.get("degree", ""))
+                dates = escape_latex(edu.get("dates", ""))
+                
+                # Format institution and location on first line
+                if institution:
+                    first_line = f"\\textbf{{{institution}}}"
+                    if location:
+                        first_line += f" \\hfill {location}\n"
+                    education_text.append(first_line)
+                
+                # Format degree and dates on second line
+                if degree:
+                    second_line = degree
+                    if dates:
+                        second_line += f" \\hfill {dates}"
+                    education_text.append(second_line)
+                
+                # Add spacing between entries
+                education_text.append("\\vspace{4pt}")
+            
+            return "\n".join(education_text)
         except Exception as e:
             logger.error(f"Error preparing education: {str(e)}", exc_info=True)
             return ""
@@ -114,76 +141,129 @@ class LaTeXCVGenerator:
                 location = escape_latex(exp.get("location", ""))
                 achievements = [escape_latex(a) for a in exp.get("achievements", [])]
 
+                # Format following the example provided in the images
                 exp_text = f"\\textbf{{{company}}} \\hfill {location}\n"
                 exp_text += f"\\textbf{{{title}}} \\hfill {dates}\n"
 
                 if achievements:
-                    exp_text += "\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt]\n"
-                    exp_text += "\n".join([f"    \\item {a}" for a in achievements])
-                    exp_text += "\n\\end{itemize}"
+                    exp_text += "\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, leftmargin=12pt]\n"
+                    for achievement in achievements:
+                        # Make sure each bullet begins with an action verb
+                        if achievement.strip() and not achievement.strip().startswith("●"):
+                            exp_text += f"    \\item {achievement}\n"
+                        else:
+                            # Remove the bullet point if it exists and replace with LaTeX itemize
+                            cleaned_achievement = achievement.replace("●", "").strip()
+                            exp_text += f"    \\item {cleaned_achievement}\n"
+                    exp_text += "\\end{itemize}"
 
                 experience_text.append(exp_text)
-            return "\n\n".join(experience_text)
+            return "\n\\vspace{6pt}\n".join(experience_text)
         except Exception as e:
             logger.error(f"Error preparing experience: {str(e)}", exc_info=True)
             return ""
+        
+    def _prepare_experience_harvard(self) -> str:
+        """Prepare experience section content specifically for Harvard format."""
+        try:
+            experience_text = []
+            for exp in self.analysis_results.experience_highlights:
+                company = escape_latex(exp.get("company", ""))
+                title = escape_latex(exp.get("title", ""))
+                dates = format_dates(exp.get("dates", ""))
+                location = escape_latex(exp.get("location", ""))
+                achievements = [escape_latex(a) for a in exp.get("achievements", [])]
+
+                # Organization and location formatted with right alignment
+                exp_entry = f"\\textbf{{{company}}} \\hfill {location}\n\n"
+
+                # Position title and dates formatted with right alignment
+                exp_entry += f"\\textbf{{{title}}} \\hfill {dates}\n"
+
+                # Add bullet points with Harvard formatting
+                if achievements:
+                    exp_entry += "\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt]\n"
+                    for ach in achievements:
+                        cleaned_ach = ach.replace("●", "").strip()
+                        if cleaned_ach:
+                            exp_entry += f"    \\item {cleaned_ach}\n"
+                    exp_entry += "\\end{itemize}"
+
+                experience_text.append(exp_entry)
+
+            # Separate entries with vertical space
+            return "\n\\vspace{8pt}\n".join(experience_text)
+        except Exception as e:
+            logger.error(f"Error preparing Harvard experience: {str(e)}", exc_info=True)
+            return ""
+
+
 
     def _prepare_skills(self) -> str:
         """Prepare skills section content with LaTeX escaping."""
         try:
             skills_text = []
 
+            # Combine core skills and competencies
+            all_skills = []
             if self.analysis_results.core_skills:
-                skills_text.append("\\textbf{Core Skills:}")
-                skills_text.append("\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt]")
-                skills_text.extend(
-                    f"    \\item {escape_latex(skill)}"
-                    for skill in self.analysis_results.core_skills
-                )
-                skills_text.append("\\end{itemize}")
-
+                all_skills.extend(self.analysis_results.core_skills)
             if self.analysis_results.competencies:
-                skills_text.append("\\textbf{Competencies:}")
-                skills_text.append("\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt]")
-                skills_text.extend(
-                    f"    \\item {escape_latex(comp)}"
-                    for comp in self.analysis_results.competencies
-                )
-                skills_text.append("\\end{itemize}")
-
+                all_skills.extend(self.analysis_results.competencies)
+                
+            if all_skills:
+                # Format as a comma-separated list with formatting
+                skills_text.append("\\textbf{Skills \\& Competencies:} " + ", ".join([escape_latex(skill) for skill in all_skills]))
+            
+            if self.analysis_results.languages_formatted:
+                skills_text.append("\\textbf{Languages:} " + ", ".join([escape_latex(lang) for lang in self.analysis_results.languages_formatted]))
+                
+            if self.analysis_results.systems_formatted:
+                skills_text.append("\\textbf{Technical Systems:} " + ", ".join([escape_latex(sys) for sys in self.analysis_results.systems_formatted]))
+                
             return "\n\n".join(skills_text)
         except Exception as e:
             logger.error(f"Error preparing skills: {str(e)}", exc_info=True)
+            return ""
+            
+    def _prepare_interests(self) -> str:
+        """Prepare interests section content with LaTeX escaping."""
+        try:
+            if not self.analysis_results.interests_formatted:
+                return ""
+                
+            interests_text = "\\textbf{Interests:} " + ", ".join([escape_latex(interest) for interest in self.analysis_results.interests_formatted])
+            return interests_text
+        except Exception as e:
+            logger.error(f"Error preparing interests: {str(e)}", exc_info=True)
+            return ""
+
+    def _prepare_leadership(self) -> str:
+        """Prepare leadership section content."""
+        try:
+            # For this section, we'll use achievement metrics as leadership examples
+            if not self.analysis_results.achievement_metrics:
+                return ""
+                
+            leadership_text = []
+            leadership_text.append("\\textbf{Leadership Organization} \\hfill Professional Development")
+            leadership_text.append("\\textbf{Leadership Role} \\hfill Ongoing")
+            
+            leadership_text.append("\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt, leftmargin=12pt]")
+            for achievement in self.analysis_results.achievement_metrics:
+                leadership_text.append(f"    \\item {escape_latex(achievement)}")
+            leadership_text.append("\\end{itemize}")
+            
+            return "\n".join(leadership_text)
+        except Exception as e:
+            logger.error(f"Error preparing leadership section: {str(e)}", exc_info=True)
             return ""
 
     def _prepare_optional_section(self) -> str:
         """Prepare optional section content with LaTeX escaping."""
         try:
-            display_section = self.analysis_results.display_section
-            if not display_section:
-                return ""
-
-            section_items = []
-            section_title = ""
-            if display_section == "languages":
-                section_items = [escape_latex(l) for l in self.analysis_results.languages_formatted]
-                section_title = "Languages"
-            elif display_section == "interests":
-                section_items = [escape_latex(i) for i in self.analysis_results.interests_formatted]
-                section_title = "Interests"
-            elif display_section == "systems":
-                section_items = [escape_latex(s) for s in self.analysis_results.systems_formatted]
-                section_title = "Technical Systems"
-
-            if not section_items:
-                return ""
-
-            section_text = [f"\\textbf{{{section_title}:}}"]
-            section_text.append("\\begin{itemize}[noitemsep, topsep=0pt, partopsep=0pt, parsep=0pt]")
-            section_text.extend(f"    \\item {item}" for item in section_items)
-            section_text.append("\\end{itemize}")
-            
-            return "\n".join(section_text)
+            # Using leadership for optional section in standard template
+            return self._prepare_leadership()
         except Exception as e:
             logger.error(f"Error preparing optional section: {str(e)}", exc_info=True)
             return ""
@@ -259,12 +339,99 @@ class LaTeXCVGenerator:
                 f.write(content)
 
             if self._compile_latex(tex_file):
-                pdf_path = self.output_dir / "standard_cv.pdf"
+                pdf_path = self.output_dir / "standard_cv_pdf.pdf"
                 logger.info(f"Standard CV saved to {pdf_path}")
                 return str(pdf_path)
             raise Exception("Failed to compile LaTeX file")
         except Exception as e:
             logger.error(f"Error generating standard CV: {str(e)}", exc_info=True)
+            raise
+
+    def generate_harvard_cv(self) -> str:
+        """Generate Harvard-style CV in PDF format."""
+        logger.info("Generating Harvard-style CV")
+        
+        try:
+            # Use the Harvard template content with improved formatting - omitting Leadership section
+            harvard_template = """\\documentclass[11pt]{article}
+    \\usepackage{graphicx} % Required for inserting images
+    \\setlength{\\parindent}{0pt}
+    \\usepackage{hyperref}
+    \\usepackage{enumitem}
+    \\usepackage{multicol}
+    \\usepackage[utf8]{inputenc} 
+    \\usepackage[T1]{fontenc}
+    \\usepackage{helvet}
+    \\renewcommand{\\familydefault}{\\sfdefault}
+    \\usepackage{lipsum}
+    \\usepackage[left=1.06cm,top=1.7cm,right=1.06cm,bottom=0.7cm]{geometry}
+
+    % Improved formatting
+    \\usepackage{titlesec}
+    \\titleformat{\\section}{\\normalfont\\Large\\bfseries}{}{0em}{}[\\titlerule]
+    \\titlespacing{\\section}{0pt}{12pt}{6pt}
+
+    % Better font and spacing
+    \\usepackage{setspace}
+    \\setlength{\\parskip}{6pt}
+
+    \\begin{document}
+    \\begin{center}
+        \\textbf{\\LARGE $name}\\\\ 
+        \\hrulefill
+    \\end{center}
+
+    \\begin{center}
+        $contact_info
+    \\end{center}
+
+    \\vspace{8pt}
+    \\begin{center}
+        \\textbf{\\large EDUCATION}
+    \\end{center}
+    $education
+
+    \\vspace{16pt}
+    \\begin{center}
+        \\textbf{\\large EXPERIENCE}
+    \\end{center}
+    $experience
+
+    \\vspace{12pt}
+    \\begin{center}
+        \\textbf{\\large SKILLS \\& COMPETENCIES}
+    \\end{center}
+    $skills
+
+    \\vspace{12pt}
+    \\begin{center}
+        \\textbf{\\large INTERESTS}
+    \\end{center}
+    $interests
+    \\end{document}"""
+
+            name = escape_latex(self.extracted_data.personal_info.name or "Professional")
+            
+            content = (
+                harvard_template.replace("$name", name)
+                .replace("$contact_info", self._prepare_contact_info())
+                .replace("$education", self._prepare_education())
+                .replace("$experience", self._prepare_experience_harvard())
+                .replace("$skills", self._prepare_skills())
+                .replace("$interests", self._prepare_interests())
+            )
+
+            tex_file = self.output_dir / "harvard_cv.tex"
+            with open(tex_file, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            if self._compile_latex(tex_file):
+                pdf_path = self.output_dir / "harvard_cv_pdf.pdf"
+                logger.info(f"Harvard-style CV saved to {pdf_path}")
+                return str(pdf_path)
+            raise Exception("Failed to compile LaTeX file")
+        except Exception as e:
+            logger.error(f"Error generating Harvard-style CV: {str(e)}", exc_info=True)
             raise
 
     def generate_visual_cv(self) -> str:
@@ -298,7 +465,7 @@ class LaTeXCVGenerator:
                 f.write(content)
 
             if self._compile_latex(tex_file):
-                pdf_path = self.output_dir / "visual_cv.pdf"
+                pdf_path = self.output_dir / "visual_cv_pdf.pdf"
                 logger.info(f"Visual CV saved to {pdf_path}")
                 return str(pdf_path)
             raise Exception("Failed to compile LaTeX file")
@@ -306,15 +473,28 @@ class LaTeXCVGenerator:
             logger.error(f"Error generating visual CV: {str(e)}", exc_info=True)
             raise
 
-    def generate_cvs(self) -> Tuple[str, str]:
-        """Generate both standard and visual CVs in PDF format."""
+    def generate_cvs(self) -> Tuple[str, str, str]:
+        """Generate standard, Harvard-style, and visual CVs in PDF format."""
         logger.info("Generating CVs")
         
         try:
             standard_cv_path = self.generate_standard_cv()
+            harvard_cv_path = self.generate_harvard_cv()
             visual_cv_path = self.generate_visual_cv()
             logger.info("CV generation complete")
-            return standard_cv_path, visual_cv_path
+            return standard_cv_path, harvard_cv_path, visual_cv_path
         except Exception as e:
             logger.error(f"Error generating CVs: {str(e)}", exc_info=True)
+            raise
+            
+    def generate_harvard_cv_only(self) -> str:
+        """Generate only the Harvard-style CV in PDF format."""
+        logger.info("Generating only Harvard-style CV")
+        
+        try:
+            harvard_cv_path = self.generate_harvard_cv()
+            logger.info("Harvard CV generation complete")
+            return harvard_cv_path
+        except Exception as e:
+            logger.error(f"Error generating Harvard CV: {str(e)}", exc_info=True)
             raise

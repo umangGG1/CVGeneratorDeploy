@@ -8,6 +8,9 @@
   ],
   "certifications": [],
   "contact": {
+    "email": "",
+    "phone": "",
+    "website": "",
     "linkedin": "www.linkedin.com/in/romakay"
   },
   "current_location": "Mississauga, Ontario, Canada",
@@ -37,6 +40,7 @@
     {
       "company_title": "Anixter",
       "job_title": "Manager of Business Development - Global Accounts",
+      "location": "",
       "timeline": "1998 - 2011 (13 years)",
       "description": "Supported the IBM Global team within all geos in the day to day quote, orders, invoicing and credit issues. Worked closely with the VP of Sales to ensure all new initiatives within the IBM program were fully documented and rolled out to the various internal sales teams and geo leads within the Anixter/IBM team. Supported IBM on various cabling and security projects. Was responsible for the day to day quotes, vendor pricing, order placement, order updates to the Project Manager, inventory and shipping updates along with Return Material requests and any invoicing issues."
     },
@@ -50,7 +54,9 @@
     {
       "company_title": "British Telecom",
       "job_title": "Sales Support",
-      "timeline": "1993 - 1998 (5 years)"
+      "location": "",
+      "timeline": "1993 - 1998 (5 years)",
+      "description": ""
     }
   ],
   "education": [
@@ -59,5 +65,10 @@
       "degree_name": "Bachelor of Commerce, Accounting",
       "timeline": "1986 - 1989"
     }
+  ],
+  "interests": [
+    "adventurous",
+    "avid runner",
+    "fitness fanatic"
   ]
 }

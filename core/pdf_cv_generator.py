@@ -60,6 +60,13 @@ class PDFCVGenerator:
             if "phone" in contact_info and contact_info["phone"]:
                 contact_parts.append(str(contact_info["phone"]))
             
+            # Add LinkedIn if available
+            if "linkedin" in contact_info and contact_info["linkedin"]:
+                linkedin = contact_info["linkedin"]
+                if not linkedin.startswith("https://"):
+                    linkedin = "https://" + linkedin.lstrip("www.")
+                contact_parts.append(linkedin)
+            
             # If no specific contact info, try to extract from location
             if not contact_parts and "location" in contact_info and contact_info["location"]:
                 contact_parts.append(str(contact_info["location"]))

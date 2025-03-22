@@ -1,8 +1,6 @@
-"""
-Document processor module for extracting information from input documents using LLMs.
-"""
 import os
 import json
+import re
 from typing import Dict, List, Any, Optional, Tuple
 
 import openai
@@ -26,29 +24,17 @@ class DocumentProcessor:
     def __init__(self):
         self.extracted_data = ExtractedData()
         self.output_dir = "output"
-        # Create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
         logger.info("DocumentProcessor initialized")
     
     def extract_text_from_pdf(self, pdf_path: str) -> str:
-        """
-        Extract text from a PDF file.
-        
-        Args:
-            pdf_path: Path to the PDF file
-            
-        Returns:
-            Extracted text as string
-        """
         logger.info(f"Extracting text from PDF: {pdf_path}")
-        
         try:
             text = ""
             with open(pdf_path, 'rb') as file:
                 reader = PyPDF2.PdfReader(file)
                 for page in reader.pages:
                     text += page.extract_text() + "\n"
-            
             logger.debug(f"Extracted {len(text)} characters from PDF")
             return text
         except Exception as e:
@@ -56,39 +42,50 @@ class DocumentProcessor:
             raise
     
     def process_linkedin_profile(self, pdf_path: str = "linkedin_profile.pdf") -> None:
-        """
-        Extract information from LinkedIn profile PDF.
-        
-        Args:
-            pdf_path: Path to the LinkedIn profile PDF
-        """
         logger.info(f"Processing LinkedIn profile from {pdf_path}")
-        
         try:
-            # Extract text from PDF
             text = self.extract_text_from_pdf(pdf_path)
-            
-            # Process using LLM
             prompt = f"""
-            This is the LinkedIn profile text from the PDF, convert this into structured format, friendly for passing to LLMs.
-            I want the sections to be:
-            - name
-            - headline
-            - top skills
-            - certifications
-            - contact (including email, website, phone etc. mentioned)
-            - current location
-            - summary
-            - experience (with all past experiences with fields: company title, job title, location, timeline, description)
-            - education (with institution name, degree name, timeline of degree/class)
-            
-            Fetch any other thing if I am missing something.
-            Note: Do extract multiple job roles in the same company, or multiple degrees achieved from the same institute.
+            Extract the following information from the LinkedIn profile text and return it in JSON format with the specified structure:
+
+            {{
+              "name": "string",
+              "headline": "string",
+              "top_skills": ["string"],
+              "certifications": ["string"],
+              "contact": {{
+                "email": "string",
+                "phone": "string",
+                "website": "string",
+                "linkedin": "string"
+              }},
+              "current_location": "string",
+              "summary": "string",
+              "experience": [
+                {{
+                  "company_title": "string",
+                  "job_title": "string",
+                  "location": "string",
+                  "timeline": "string",
+                  "description": "string"
+                }}
+              ],
+              "education": [
+                {{
+                  "institution_name": "string",
+                  "degree_name": "string",
+                  "timeline": "string"
+                }}
+              ],
+              "interests": ["string"]
+            }}
+
+            If a section is not found, include it with an empty array or object as appropriate.
+            Ensure to extract contact information (email, phone, website, LinkedIn URL, etc.) from anywhere in the text, not just dedicated sections.
+            For interests, look for mentions of hobbies, volunteer work, personal interests, or activities throughout the text.
             
             LinkedIn profile text:
             {text}
-            
-            Return the data in JSON format.
             """
             
             response = client.chat.completions.create(
@@ -97,7 +94,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information from LinkedIn profiles."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.0
+                temperature=0.1
             )
             
             content = response.choices[0].message.content.strip()
@@ -107,14 +104,19 @@ class DocumentProcessor:
                 logger.warning("Failed to extract structured data from LinkedIn profile")
                 return
             
-            # Map extracted data to our data model
             self._map_linkedin_data_to_model(profile_data)
             
-            # Save the processed data to a JSON file
             output_file = os.path.join(self.output_dir, "linkedin_profile_data.json")
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(profile_data, f, indent=2, ensure_ascii=False)
             logger.info(f"LinkedIn profile data saved to {output_file}")
+            
+            if not self.extracted_data.personal_info.contact_info.get("email"):
+                email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+                emails = re.findall(email_pattern, text)
+                if emails:
+                    self.extracted_data.personal_info.contact_info["email"] = emails[0]
+                    logger.info("Extracted email via regex: %s", emails[0])
             
             logger.info("LinkedIn profile processing complete")
         except Exception as e:
@@ -122,42 +124,63 @@ class DocumentProcessor:
             raise
     
     def process_current_cv(self, pdf_path: str = "current_cv.pdf") -> None:
-        """
-        Extract information from current CV PDF.
-        
-        Args:
-            pdf_path: Path to the CV PDF
-        """
         logger.info(f"Processing current CV from {pdf_path}")
-        
         try:
-            # Extract text from PDF
             text = self.extract_text_from_pdf(pdf_path)
-            
-            # Process using LLM
             prompt = f"""
-            This is a CV/Resume text from the PDF. Convert this into a structured format suitable for parsing by LLMs.
-            
-            I want the sections to be:
-            - personal_info (name, contact details, location, professional title)
-            - summary/profile
-            - skills (list of technical and soft skills)
-            - experience (all work experiences with company name, job title, dates, location, responsibilities, achievements)
-            - education (all education with institution, degree, dates, additional details)
-            - certifications/training
-            - languages (with proficiency levels if mentioned)
-            - achievements/awards
-            - interests/hobbies (any interests or activities mentioned)
-            - systems/tools (any software, platforms, or technical tools the person is familiar with)
-            - additional_sections (any other sections present in the CV)
-            
-            Note: Please extract all details including multiple roles at the same company or multiple degrees from the same institution.
-            Extract any quantifiable achievements with metrics when available.
+            Extract the following information from the CV/Resume text and return it in JSON format with the specified structure:
+
+            {{
+              "personal_info": {{
+                "name": "string",
+                "contact": {{
+                  "email": "string",
+                  "phone": "string",
+                  "address": "string",
+                  "linkedin": "string"
+                }},
+                "location": "string",
+                "professional_title": "string"
+              }},
+              "summary": "string",
+              "skills": ["string"],
+              "experience": [
+                {{
+                  "company_name": "string",
+                  "job_title": "string",
+                  "dates": "string",
+                  "location": "string",
+                  "responsibilities": ["string"],
+                  "achievements": ["string"]
+                }}
+              ],
+              "education": [
+                {{
+                  "institution": "string",
+                  "degree": "string",
+                  "dates": "string",
+                  "details": "string"
+                }}
+              ],
+              "certifications": ["string"],
+              "languages": [
+                {{
+                  "language": "string",
+                  "proficiency": "string"
+                }}
+              ],
+              "achievements": ["string"],
+              "interests": ["string"],
+              "systems_tools": ["string"],
+              "additional_sections": {{}}
+            }}
+
+            If a section is not found, include it with an empty array or object as appropriate.
+            Extract contact details (email, phone, address, LinkedIn URL, etc.) from anywhere in the CV.
+            For interests/hobbies, look for mentions of personal interests, hobbies, volunteer work, or extracurricular activities throughout the text.
             
             CV text:
             {text}
-            
-            Return the data in JSON format.
             """
             
             response = client.chat.completions.create(
@@ -166,7 +189,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information from CVs and resumes."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.0
+                temperature=0.1
             )
             
             content = response.choices[0].message.content.strip()
@@ -176,14 +199,19 @@ class DocumentProcessor:
                 logger.warning("Failed to extract structured data from CV")
                 return
             
-            # Map extracted data to our data model
             self._map_cv_data_to_model(cv_data)
             
-            # Save the processed data to a JSON file
             output_file = os.path.join(self.output_dir, "cv_data.json")
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(cv_data, f, indent=2, ensure_ascii=False)
             logger.info(f"CV data saved to {output_file}")
+            
+            if not self.extracted_data.personal_info.contact_info.get("email"):
+                email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+                emails = re.findall(email_pattern, text)
+                if emails:
+                    self.extracted_data.personal_info.contact_info["email"] = emails[0]
+                    logger.info("Extracted email via regex: %s", emails[0])
             
             logger.info("CV processing complete")
         except Exception as e:
@@ -191,22 +219,9 @@ class DocumentProcessor:
             raise
     
     def process_meeting_transcript(self, pdf_path: str = "meeting_transcript.pdf") -> TranscriptInsights:
-        """
-        Extract key insights from meeting transcript PDF.
-        
-        Args:
-            pdf_path: Path to the meeting transcript PDF
-            
-        Returns:
-            TranscriptInsights object
-        """
         logger.info(f"Processing meeting transcript from {pdf_path}")
-        
         try:
-            # Extract text from PDF
             text = self.extract_text_from_pdf(pdf_path)
-            
-            # Process using LLM
             prompt = f"""
             Please analyze this meeting transcript between a career coach and client, and extract the following information:
             
@@ -229,7 +244,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert career coach assistant that extracts key information from meeting transcripts."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.0
+                temperature=0.1
             )
             
             content = response.choices[0].message.content.strip()
@@ -249,37 +264,32 @@ class DocumentProcessor:
             return TranscriptInsights()
     
     def process_professional_goals(self, pdf_path: str = "professional_goals.pdf") -> GoalsData:
-        """
-        Process professional goals document from PDF.
-        
-        Args:
-            pdf_path: Path to the professional goals PDF
-            
-        Returns:
-            GoalsData object
-        """
         logger.info(f"Processing professional goals from {pdf_path}")
-        
         try:
-            # Extract text from PDF
             text = self.extract_text_from_pdf(pdf_path)
-            
-            # Process using LLM
             prompt = f"""
             This document contains a person's professional goals and aspirations. 
-            Extract and structure the following information:
+            Extract and structure the following information as plain strings (not dictionaries or lists unless specified):
             
-            1. Professional goals (overall career direction)
-            2. Career goals (specific targets for the next 1-3 years)
-            3. Target industries or roles the person is interested in
-            4. Unique value proposition (what makes them stand out)
-            5. Skills they want to highlight or develop
-            6. Achievements they're proud of or want to emphasize
+            1. Professional goals (overall career direction) - return as a single string
+            2. Career goals (specific targets for the next 1-3 years) - return as a single string
+            3. Target industries or roles the person is interested in - return as a single string (comma-separated if multiple)
+            4. Unique value proposition (what makes them stand out) - return as a single string
+            5. Skills they want to highlight or develop - return as a single string (comma-separated if multiple)
+            6. Achievements they're proud of or want to emphasize - return as a single string (comma-separated if multiple)
             
             Professional goals text:
             {text}
             
-            Return the data in JSON format with these categories.
+            Return the data in JSON format with these categories:
+            {{
+                "professional_goals": "string",
+                "career_goals": "string",
+                "target_industries": "string",
+                "unique_value": "string",
+                "skills": "string",
+                "achievements": "string"
+            }}
             """
             
             response = client.chat.completions.create(
@@ -288,7 +298,7 @@ class DocumentProcessor:
                     {"role": "system", "content": "You are an expert at extracting structured information about professional goals and aspirations."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.0
+                temperature=0.1
             )
             
             content = response.choices[0].message.content.strip()
@@ -307,30 +317,122 @@ class DocumentProcessor:
             logger.error(f"Error processing professional goals: {str(e)}", exc_info=True)
             return GoalsData()
     
+    def _normalize_education_text(self, text: str) -> str:
+        if not text:
+            return ""
+        
+        # Convert to lowercase and remove extra spaces
+        text = " ".join(text.lower().split())
+        
+        # Remove punctuation
+        text = re.sub(r'[^\w\s-]', '', text)
+        
+        # Standardize degree variations
+        degree_replacements = {
+            'bachelor degree': 'bachelor',
+            'bachelors degree': 'bachelor',
+            'bachelor of': 'bachelor',
+            'masters degree': 'master',
+            'master of': 'master',
+            'with financial accounting and auditing': '',  # Remove specific field mentions
+            'accounting': '',  # Normalize by removing field if it's the only difference
+        }
+        for old, new in degree_replacements.items():
+            text = text.replace(old, new)
+        
+        # Standardize institution names
+        institution_replacements = {
+            ', india': '',  # Remove country suffix
+            'india': '',
+            'university of': 'university',
+        }
+        for old, new in institution_replacements.items():
+            text = text.replace(old, new)
+        
+        return text.strip()
+
+    def _is_duplicate_education(self, new_edu: Dict[str, str], existing_education: List[Education]) -> bool:
+        # Normalize new education data
+        new_degree = self._normalize_education_text(new_edu.get("degree", ""))
+        new_institution = self._normalize_education_text(new_edu.get("institution", ""))
+        new_dates = self._normalize_education_text(new_edu.get("dates", ""))
+        
+        # Extract years from new dates
+        new_years = re.findall(r'(19|20)\d{2}', new_dates)
+        new_start_year = min(new_years) if new_years else ""
+        new_end_year = max(new_years) if new_years else new_years[0] if new_years else ""
+        
+        for edu in existing_education:
+            # Normalize existing education data
+            existing_degree = self._normalize_education_text(edu.degree)
+            existing_institution = self._normalize_education_text(edu.institution)
+            existing_dates = self._normalize_education_text(edu.dates)
+            
+            # Extract years from existing dates
+            existing_years = re.findall(r'(19|20)\d{2}', existing_dates)
+            existing_start_year = min(existing_years) if existing_years else ""
+            existing_end_year = max(existing_years) if existing_years else existing_years[0] if existing_years else ""
+            
+            # Check for duplicates with improved logic
+            institution_match = new_institution and existing_institution and new_institution == existing_institution
+            
+            # Date overlap check
+            date_match = False
+            if new_years and existing_years:
+                # Check if any year overlaps or is within 1 year
+                for ny in new_years:
+                    for ey in existing_years:
+                        if abs(int(ny) - int(ey)) <= 1:
+                            date_match = True
+                            break
+                    if date_match:
+                        break
+            elif not new_years or not existing_years:  # If one has no year, rely on other fields
+                date_match = True
+            
+            # Degree similarity check (basic word overlap)
+            new_degree_words = set(new_degree.split())
+            existing_degree_words = set(existing_degree.split())
+            degree_overlap = len(new_degree_words.intersection(existing_degree_words)) > 0
+            
+            if institution_match and date_match and degree_overlap:
+                return True
+        
+        return False
     def _map_linkedin_data_to_model(self, profile_data: Dict[str, Any]) -> None:
-        """
-        Map extracted LinkedIn data to our data model.
-        
-        Args:
-            profile_data: Dictionary of extracted LinkedIn data
-        """
         logger.debug("Mapping LinkedIn data to model")
-        
         try:
-            # Map personal info
             self.extracted_data.personal_info.name = profile_data.get("name", "")
             self.extracted_data.personal_info.current_headline = profile_data.get("headline", "")
             self.extracted_data.personal_info.summary = profile_data.get("summary", "")
             
-            # Add contact info if available
-            if "contact" in profile_data:
-                self.extracted_data.personal_info.contact_info = profile_data["contact"]
+            # Initialize contact info if empty
+            if not self.extracted_data.personal_info.contact_info:
+                self.extracted_data.personal_info.contact_info = {}
             
-            # Map skills
+            # Map contact info
+            contact = profile_data.get("contact", {})
+            if isinstance(contact, dict):
+                # Update contact info
+                for key, value in contact.items():
+                    if value:  # Always update if value exists, don't check if already set
+                        self.extracted_data.personal_info.contact_info[key] = value
+                
+                # Add current_location to contact_info if available
+                if current_location := profile_data.get("current_location"):
+                    self.extracted_data.personal_info.contact_info["location"] = current_location
+            else:
+                logger.warning("Contact info is not a dictionary: %s", contact)
+            
+            # Ensure LinkedIn URL is set
+            if linkedin_url := contact.get("linkedin"):
+                if not linkedin_url.startswith("https://"):
+                    linkedin_url = "https://" + linkedin_url.lstrip("www.")
+                self.extracted_data.personal_info.contact_info["linkedin"] = linkedin_url
+            
             if "top_skills" in profile_data and isinstance(profile_data["top_skills"], list):
                 self.extracted_data.skills.extend(profile_data["top_skills"])
             
-            # Map experience
             if "experience" in profile_data and isinstance(profile_data["experience"], list):
                 for exp_data in profile_data["experience"]:
                     experience = Experience(
@@ -340,30 +442,31 @@ class DocumentProcessor:
                         dates=exp_data.get("timeline", ""),
                         description=exp_data.get("description", "")
                     )
-                    
-                    # Extract achievements from description if not explicitly provided
                     if "achievements" in exp_data and isinstance(exp_data["achievements"], list):
                         experience.achievements = exp_data["achievements"]
-                    
                     self.extracted_data.experience.append(experience)
             
-            # Map education
             if "education" in profile_data and isinstance(profile_data["education"], list):
                 for edu_data in profile_data["education"]:
+                    # Skip if this education entry already exists
+                    if self._is_duplicate_education({
+                        "degree": edu_data.get("degree_name", ""),
+                        "institution": edu_data.get("institution_name", ""),
+                        "dates": edu_data.get("timeline", "")
+                    }, self.extracted_data.education):
+                        continue
+                    
                     education = Education(
                         degree=edu_data.get("degree_name", ""),
                         institution=edu_data.get("institution_name", ""),
                         dates=edu_data.get("timeline", ""),
                         details=edu_data.get("description", "")
                     )
-                    
                     self.extracted_data.education.append(education)
             
-            # Map certifications
             if "certifications" in profile_data and isinstance(profile_data["certifications"], list):
                 self.extracted_data.certifications.extend(profile_data["certifications"])
             
-            # Map languages if available
             if "languages" in profile_data and isinstance(profile_data["languages"], list):
                 for lang_data in profile_data["languages"]:
                     if isinstance(lang_data, dict):
@@ -373,151 +476,128 @@ class DocumentProcessor:
                         )
                     else:
                         language = Language(language=lang_data)
-                    
                     self.extracted_data.languages.append(language)
+            
+            interests = profile_data.get("interests", [])
+            if isinstance(interests, list):
+                capitalized_interests = [interest.capitalize() for interest in interests if interest.strip()]
+                self.extracted_data.interests.extend(capitalized_interests)
+            else:
+                logger.warning("Interests is not a list: %s", interests)
             
             logger.debug("LinkedIn data mapped successfully")
         except Exception as e:
             logger.error(f"Error mapping LinkedIn data to model: {str(e)}", exc_info=True)
+
+    def _merge_education_entries(self, existing_edu: Education, new_edu: Dict[str, str]) -> None:
+        # Merge degree if new one has more detail
+        if len(new_edu.get("degree", "")) > len(existing_edu.degree):
+            existing_edu.degree = new_edu["degree"]
+        
+        # Merge dates (take the range if available)
+        new_dates = new_edu.get("dates", "")
+        if '-' in new_dates and '-' not in existing_edu.dates:
+            existing_edu.dates = new_dates
+        
+        # Merge details if new one has content
+        if new_edu.get("details") and not existing_edu.details:
+            existing_edu.details = new_edu["details"]
     
-# Fix for the _map_cv_data_to_model method in core/document_processor.py
-
     def _map_cv_data_to_model(self, cv_data: Dict[str, Any]) -> None:
-        """
-        Map extracted CV data to our data model.
-        
-        Args:
-            cv_data: Dictionary of extracted CV data
-        """
         logger.debug("Mapping CV data to model")
-        
         try:
-            # Map personal info
-            if "personal_info" in cv_data:
+            if "personal_info" in cv_data and isinstance(cv_data["personal_info"], dict):
                 personal_info = cv_data["personal_info"]
-                if isinstance(personal_info, dict):
-                    self.extracted_data.personal_info.name = personal_info.get("name", "")
-                    new_headline = personal_info.get("professional_title", "")
-                    if new_headline:
-                        if self.extracted_data.personal_info.current_headline:
-                            self.extracted_data.personal_info.current_headline += " | " + new_headline
-                        else:
-                            self.extracted_data.personal_info.current_headline = new_headline
-
-                    self.extracted_data.personal_info.contact_info = {
-                        k: v for k, v in personal_info.items() 
-                        if k not in ["name", "professional_title"]
-                    }
+                self.extracted_data.personal_info.name = personal_info.get("name", "")
+                new_headline = personal_info.get("professional_title", "")
+                if new_headline:
+                    if self.extracted_data.personal_info.current_headline:
+                        self.extracted_data.personal_info.current_headline += " | " + new_headline
+                    else:
+                        self.extracted_data.personal_info.current_headline = new_headline
+                contact = personal_info.get("contact", {})
+                if isinstance(contact, dict):
+                    # Update contact info, overwriting LinkedIn data if CV provides it
+                    for key, value in contact.items():
+                        if value:
+                            self.extracted_data.personal_info.contact_info[key] = value
+                else:
+                    logger.warning("Contact info is not a dictionary: %s", contact)
             
-            # Map summary
             if "summary" in cv_data:
                 self.extracted_data.personal_info.summary = cv_data["summary"]
-            elif "profile" in cv_data:
-                self.extracted_data.personal_info.summary = cv_data["profile"]
-            elif "summary/profile" in cv_data:
-                # Handle case where summary is a list
-                if isinstance(cv_data["summary/profile"], list):
-                    self.extracted_data.personal_info.summary = "\n".join(cv_data["summary/profile"])
-                else:
-                    self.extracted_data.personal_info.summary = cv_data["summary/profile"]
             
-            # Map skills
-            if "skills" in cv_data:
-                skills = cv_data["skills"]
-                if isinstance(skills, list):
-                    self.extracted_data.skills.extend(skills)
-                elif isinstance(skills, dict):
-                    for skill_category, skill_list in skills.items():
-                        if isinstance(skill_list, list):
-                            self.extracted_data.skills.extend(skill_list)
+            if "skills" in cv_data and isinstance(cv_data["skills"], list):
+                self.extracted_data.skills.extend(cv_data["skills"])
             
-            # Map experience
             if "experience" in cv_data and isinstance(cv_data["experience"], list):
                 for exp_data in cv_data["experience"]:
-                    if not isinstance(exp_data, dict):
-                        continue
-                        
                     experience = Experience(
-                        title=exp_data.get("job_title", "") or exp_data.get("title", ""),
-                        company=exp_data.get("company_name", "") or exp_data.get("company", "") or exp_data.get("company_title", ""),
+                        title=exp_data.get("job_title", ""),
+                        company=exp_data.get("company_name", ""),
                         location=exp_data.get("location", ""),
-                        dates=exp_data.get("dates", "") or exp_data.get("timeline", ""),
+                        dates=exp_data.get("dates", ""),
                         description=exp_data.get("description", "")
                     )
-                    
-                    # Add responsibilities if available
                     if "responsibilities" in exp_data and isinstance(exp_data["responsibilities"], list):
                         experience.description += "\n" + "\n".join(exp_data["responsibilities"])
-                    
-                    # Add achievements if available
-                    if "achievements" in exp_data and isinstance(exp_data["achievements"], list) and exp_data["achievements"]:
+                    if "achievements" in exp_data and isinstance(exp_data["achievements"], list):
                         experience.achievements = exp_data["achievements"]
-                    
                     self.extracted_data.experience.append(experience)
             
-            # Map education
-            if "education" in cv_data and isinstance(cv_data["education"], list):
-                for edu_data in cv_data["education"]:
-                    if not isinstance(edu_data, dict):
-                        continue
-                        
-                    education = Education(
-                        degree=edu_data.get("degree", "") or edu_data.get("degree_name", ""),
-                        institution=edu_data.get("institution", "") or edu_data.get("institution_name", ""),
-                        dates=edu_data.get("dates", "") or edu_data.get("timeline", ""),
-                        details=edu_data.get("details", "") or edu_data.get("additional_details", "")
-                    )
-                    
-                    self.extracted_data.education.append(education)
+                    if "education" in cv_data and isinstance(cv_data["education"], list):
+                        for edu_data in cv_data["education"]:
+                            if self._is_duplicate_education(edu_data, self.extracted_data.education):
+                                # Find the matching entry and merge
+                                for existing_edu in self.extracted_data.education:
+                                    if self._is_duplicate_education(edu_data, [existing_edu]):
+                                        self._merge_education_entries(existing_edu, edu_data)
+                                        break
+                            else:
+                                education = Education(
+                                    degree=edu_data.get("degree", ""),
+                                    institution=edu_data.get("institution", ""),
+                                    dates=edu_data.get("dates", ""),
+                                    details=edu_data.get("details", "")
+                                )
+                                self.extracted_data.education.append(education)
             
-            # Map certifications
-            if "certifications" in cv_data:
-                certs = cv_data["certifications"]
-                if isinstance(certs, list):
-                    self.extracted_data.certifications.extend(certs)
-            elif "certifications_training" in cv_data or "certifications/training" in cv_data:
-                certs = cv_data.get("certifications_training", []) or cv_data.get("certifications/training", [])
-                if isinstance(certs, list):
-                    self.extracted_data.certifications.extend(certs)
+            if "certifications" in cv_data and isinstance(cv_data["certifications"], list):
+                self.extracted_data.certifications.extend(cv_data["certifications"])
             
-            # Map languages
-            if "languages" in cv_data:
-                langs = cv_data["languages"]
-                if isinstance(langs, list):
-                    for lang_data in langs:
-                        if isinstance(lang_data, dict):
-                            language = Language(
-                                language=lang_data.get("language", ""),
-                                proficiency=lang_data.get("proficiency", "Fluent")
-                            )
-                        else:
-                            language = Language(language=lang_data)
-                        
-                        self.extracted_data.languages.append(language)
+            if "languages" in cv_data and isinstance(cv_data["languages"], list):
+                for lang_data in cv_data["languages"]:
+                    if isinstance(lang_data, dict):
+                        language = Language(
+                            language=lang_data.get("language", ""),
+                            proficiency=lang_data.get("proficiency", "Fluent")
+                        )
+                    else:
+                        language = Language(language=lang_data)
+                    self.extracted_data.languages.append(language)
             
-            # Map achievements
-            if "achievements" in cv_data or "awards" in cv_data or "achievements/awards" in cv_data:
-                achievements = cv_data.get("achievements", []) or cv_data.get("awards", []) or cv_data.get("achievements/awards", [])
-                if isinstance(achievements, list):
-                    self.extracted_data.achievements.extend(achievements)
+            if "achievements" in cv_data and isinstance(cv_data["achievements"], list):
+                self.extracted_data.achievements.extend(cv_data["achievements"])
             
-            # Map interests - Multiple potential field names
+            # Process interests from CV and combine with LinkedIn interests
+            cv_interests = set()
             for field in ["interests", "interests/hobbies", "hobbies"]:
                 if field in cv_data:
                     interests = cv_data[field]
                     if isinstance(interests, list):
-                        self.extracted_data.interests.extend(interests)
+                        cv_interests.update(interest.strip().capitalize() for interest in interests if interest.strip())
                     elif isinstance(interests, str):
-                        self.extracted_data.interests.append(interests)
+                        cv_interests.add(interests.strip().capitalize())
+                    else:
+                        logger.warning("Interests field %s is not a list or string: %s", field, interests)
             
-            # Map systems/tools - Multiple potential field names
-            for field in ["systems", "systems/tools", "tools", "technical_tools"]:
-                if field in cv_data:
-                    systems = cv_data[field]
-                    if isinstance(systems, list):
-                        self.extracted_data.systems.extend(systems)
-                    elif isinstance(systems, str):
-                        self.extracted_data.systems.append(systems)
+            # Convert existing interests to set and capitalize (in case LinkedIn data wasn't processed yet)
+            existing_interests = set(interest.capitalize() for interest in self.extracted_data.interests)
+            existing_interests.update(cv_interests)
+            self.extracted_data.interests = list(existing_interests)
+            
+            if "systems_tools" in cv_data and isinstance(cv_data["systems_tools"], list):
+                self.extracted_data.systems.extend(cv_data["systems_tools"])
             
             logger.debug("CV data mapped successfully")
         except Exception as e:

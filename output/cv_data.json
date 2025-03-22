@@ -1,122 +1,129 @@
 {
   "personal_info": {
     "name": "Roma Kay",
-    "contact_details": "Available on request",
-    "location": "Glenview, IL, USA",
+    "contact": {
+      "email": "",
+      "phone": "",
+      "address": "",
+      "linkedin": ""
+    },
+    "location": "",
     "professional_title": "Senior Sales and Customer Service Professional"
   },
-  "summary/profile": "An experienced and result-oriented Senior Sales and Customer Service professional with strong work ethics and excellent time management skills. Consistently takes the lead to track down and resolve issues affecting service delivery. Able to operate efficiently with minimal direct supervision under tight timelines. Able to learn and adapt quickly to the ever-changing needs of a business environment. Long track record of providing outstanding customer service support. Recipient of Award of Excellence in 2009 – Anixter’s most prestigious honour for employees demonstrating excellence for co-workers, customers, and partners.",
-  "skills": [
-    "Sales Operations",
-    "Customer Service",
-    "Time Management",
-    "Leadership",
-    "Global Coordination",
-    "Contract Management",
-    "Project Management",
-    "Budgeting and Forecasting",
-    "Training and Mentoring"
-  ],
+  "summary": "An experienced and result oriented Senior Sales and Customer service professional with strong work ethics and excellent time management skills. Consistently takes the lead to track down and resolve issues affecting service delivery. Able to operate efficiently with minimal direct supervision under tight timelines. Able to learn and adapt quickly to the ever-changing needs of a business environment. Long track record of providing outstanding customer service support. Recipient of Award of Excellence in 2009 – This award is Anixter’s most prestigious honour to employees that demonstrate Anixter’s philosophy to providing excellence for co-workers, customers and partners.",
+  "skills": [],
   "experience": [
     {
       "company_name": "Anixter",
       "job_title": "Vice President, Global Sales Operations",
-      "dates": "Jan 2016 to present",
+      "dates": "Jan’16 to present",
       "location": "Glenview, IL, USA",
       "responsibilities": [
         "Heading the Global Sales Operations US team",
-        "Leverage capabilities in support of Global accounts and large, complex opportunities",
-        "Provide clear, consistent processes and best practices across all geographies",
-        "Support programs for Global End-Users, service providers, Global Integrators, Global Security Integrators and MTDCs",
-        "Manage 4 US Program Managers and provide leadership to the Global Sales Ops team",
-        "Support preparation and coordination of resources for Pricing agreements",
-        "Support for Large, Complex, Global or National RFPs",
-        "Assist Global VPs of Sales in managing customer deliverables, cost saving reports, project metrics, scorecards",
-        "Identify best practices in global sourcing, procurement, bill of material management, importation services, deployment and transportation management"
+        "Responsible for the continued leverage of capabilities in support of Global accounts and large, complex opportunities",
+        "Providing clear, consistent processes and best practices across all geographies",
+        "Work closely with the business to support programs that support Global End-Users, service providers, Global Integrators, Global Security Integrators and MTDCs",
+        "Manage 4 US Program Managers and provide leadership to the Global Sales Ops team members around the world",
+        "Provide support for preparation and coordination of resources needed to complete Pricing agreements",
+        "Provide support for Large, Complex, Global or National RFPs",
+        "Assisting the Global VPs of Sales in managing their customer deliverables, cost saving reports, project metrics, score cards etc.",
+        "Providing expertise to identify 'best practices' in global sourcing, procurement, bill of material management, importation services, deployment and transportation management"
       ],
       "achievements": [
-        "Enhanced experience on multinational opportunities",
+        "Enhance the experience on multinational opportunities",
         "Coordinated efforts across all regions on complex, multinational customer requests",
-        "Developed best practices and set proper expectations",
-        "Provided a framework for effective communication, engagement, documentation, and visibility among shared resources and sales teams globally"
+        "Develop best practices and set proper expectations",
+        "Global Coordination - Local Expertise",
+        "Central Point of Contact for the Account Team",
+        "Incorporate Subject Matter Experts on a global basis when required on complex customer requests",
+        "Details on how Anixter can support an Account Globally",
+        "Provide best methods to minimize costs & delivery associated with Global Transactions",
+        "Recommendations on Qualified Local Contractors / Integrators",
+        "Global Pricing Response",
+        "Coordinate pricing within and across participating regions",
+        "Assistance with preparation and coordination of resources needed to complete",
+        "Global Inventory Support",
+        "Customer Deliverables based on your Key Performance Indicators",
+        "Customized Reporting, Compliance/Auditing"
       ]
     },
     {
       "company_name": "Anixter Canada",
       "job_title": "Director of Sales IBM Global Program",
-      "dates": "Oct 2011 to date",
+      "dates": "Oct’11 to date",
       "location": "Mississauga, Ontario, Canada",
       "responsibilities": [
-        "Central engagement point and driver for major initiatives within the program",
-        "Primary responsibility for the Customer’s Global contract",
-        "Manage global project pipeline, forecasting and projecting sales and revenue targets",
-        "Focal contact for Canada within the Global Sales Operations team",
-        "Interact with suppliers on pricing, project fulfilment, escalations, reporting and business reviews",
-        "Prepare presentations for customer business reviews",
-        "Work with Contracts team and legal counsel for successful execution of customer agreements and contracts",
+        "Central engagement point and driver for all the major initiatives within the program",
+        "Held primary responsibility for the Customer’s Global contract",
+        "Manage the global project pipeline, forecasting and projecting monthly, quarterly and yearly sales and revenue targets",
+        "Focal contact for Canada within the Global Sales Operations team for multi-regional opportunities",
+        "Closely interact with the suppliers on pricing, project fulfilment, escalations, reporting and business reviews",
+        "Responsible for preparing presentations for customer business reviews",
+        "Work closely with the Contracts team and legal counsel for successful execution of customer agreements and contracts",
         "1st and 2nd level escalation contact for customer",
         "Managed Vendor contracts on the IBM Account",
-        "Responsible for all aspects of the IBM Playbook and training new IBM assigned reps",
+        "Responsible for all aspects of the IBM Playbook and training all new IBM assigned reps",
         "Managed all internal and external audits on the account",
-        "Managed all EICC audit requests globally"
-      ]
+        "Managed all EICC audit requests - Globally"
+      ],
+      "achievements": []
     },
     {
       "company_name": "Anixter Canada",
       "job_title": "Manager of Business Development – Major Accounts",
-      "dates": "Dec 2007 to Oct 2011",
+      "dates": "Dec’07 to Oct’11",
       "location": "Mississauga, Ontario, Canada",
       "responsibilities": [
-        "Worked closely with the VP of sales to develop, coordinate and drive key initiatives",
-        "Interacted with teams in various geographies on monthly reports",
+        "Worked closely with the VP of sales to help develop, coordinate and drive key initiatives within the Global Program",
+        "Interacted with teams in the various geographies on monthly reports required by Anixter Senior Management",
         "Prepared budgets, forecasts and business plans",
-        "Ensured completion of action items from meeting minutes",
-        "Managed distribution and release of customer orders and order tracking process",
-        "Primary point of contact for customer account details"
-      ]
+        "Utilized meeting minutes to ensure all action items were completed",
+        "Overlooked the distribution and release of all customer orders and managed the order tracking process",
+        "Primary point of contact within the organization for customer account details"
+      ],
+      "achievements": []
     },
     {
       "company_name": "Anixter Canada",
       "job_title": "Sales Major Accounts – IBM",
-      "dates": "Oct 2004 to Dec 2007",
+      "dates": "Oct’04 to Dec’07",
       "location": "Mississauga, Ontario, Canada",
       "responsibilities": [
         "Provided internal sales support to various sales teams within North America",
         "Maintained and managed financial sales forecast reports and back order reports",
-        "Assisted Director of Sales & Support in drafting business plans for the IBM Program",
-        "Project manager for two multi-year roll out deals",
+        "Assisted Director of Sales & Support in drafting various business plans for the IBM Program",
+        "Project manager for two multi-year roll out deals from sales, customer service and credit perspectives",
         "Worked with the credit team on resolution of invoicing/shipping discrepancies",
-        "Worked towards achievement and overachievement of team and individual goals",
-        "Liaised with various divisions to set up IBM procurement groups on an Electronic Data Interface system",
+        "Worked towards the achievement and overachievement of team and individual goals",
+        "Liaised with various divisions within Anixter to successfully set up one of the key IBM procurement groups on an Electronic Data Interface system",
         "Mentored new hires within the team"
-      ]
+      ],
+      "achievements": []
     },
     {
       "company_name": "GE ITS",
       "job_title": "Internal Sales - Contractor",
-      "dates": "Jul 2004 – Oct 2004",
+      "dates": "Jul’04 – Oct’04",
       "location": "Mississauga, Ontario, Canada",
       "responsibilities": [
-        "Worked with the sales support team for the US",
-        "Provided internal sales support to the Sales Managers based out of US",
-        "Learned the company’s order entry system"
-      ]
+        "Worked with the sales support team for the US, providing internal sales support to the Sales Managers based out of US",
+        "Successfully learned the company’s order entry system"
+      ],
+      "achievements": []
     },
     {
       "company_name": "Anixter (UK) Ltd.",
       "job_title": "Internal Sales Supervisor",
-      "dates": "Apr 1998 to Jun 2004",
+      "dates": "Apr’98 to Jun’04",
       "location": "Jebel Ali Free Zone, Dubai, U.A.E.",
       "responsibilities": [
         "Consistently achieved and exceeded sales targets",
         "Responsible for training new employees on the company’s mainframe computer system",
-        "Managed customers in different geographical locations",
-        "Provided sales forecasts to Regional Sales Director",
-        "Actively managed project board and helped drive resellers to achieve and exceed targets"
+        "Successfully managed customers in different geographical locations",
+        "Responsible for providing sales forecasts to Regional Sales Director",
+        "Actively managed project board and helped drive the resellers to achieve and exceed their targets"
       ],
-      "achievements": [
-        "Revenue growth from $250K to more than $7 million over 6 years"
-      ]
+      "achievements": []
     }
   ],
   "education": [
@@ -124,22 +131,19 @@
       "institution": "Bombay University, India",
       "degree": "Bachelor degree in Commerce with Financial Accounting and Auditing",
       "dates": "1989",
-      "additional_details": null
+      "details": ""
     }
   ],
-  "certifications/training": [],
+  "certifications": [],
   "languages": [],
-  "achievements/awards": [
+  "achievements": [
     "Recipient of Award of Excellence in 2009 – Anixter’s most prestigious honour"
   ],
-  "interests/hobbies": [
+  "interests": [
     "Reading",
     "Half Marathon running",
     "Keeping fit"
   ],
-  "systems/tools": [
-    "Mainframe computer system",
-    "Electronic Data Interface system"
-  ],
-  "additional_sections": []
+  "systems_tools": [],
+  "additional_sections": {}
 }

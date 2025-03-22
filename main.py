@@ -58,16 +58,17 @@ def main():
         workflow = CVGenerationWorkflow()
         
         # Run full workflow
-        standard_cv, visual_cv, standard_cv_pdf, visual_cv_pdf = workflow.run_full_workflow()
+        standard_cv_pdf, visual_cv_pdf, harvard_cv_pdf = workflow.run_full_workflow()
         
         # Print output file paths based on format choice
         if args.format in ["md", "both"]:
             print(f"Standard CV saved to: {os.path.join(OUTPUT_DIR, 'standard_cv.md')}")
             print(f"Visual CV saved to: {os.path.join(OUTPUT_DIR, 'visual_cv.md')}")
-        
+
         if args.format in ["pdf", "both"]:
             print(f"Standard CV PDF saved to: {standard_cv_pdf}")
             print(f"Visual CV PDF saved to: {visual_cv_pdf}")
+            print(f"Harvard CV PDF saved to: {harvard_cv_pdf}")
         
         return 0
     

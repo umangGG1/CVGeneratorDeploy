@@ -546,81 +546,103 @@ class ContentAnalyzer:
             
             if education_data:
                 prompt = f"""
-                Format the following education information for a CV, following exactly the example format:
+                Format the following education information into a structured JSON array.
+                Each education entry should maintain the same structure as the input but with standardized formatting.
 
-                Education information:
+                Input education data:
                 {json.dumps(education_data, indent=2)}
 
-                Example format:
-                2014 - 2017 Executive MBA
-                Tiffin University (Ohio, USA)
+                Required format for each entry:
+                {{
+                    "degree": "Full degree name",
+                    "institution": "Institution name",
+                    "dates": "Date range in YYYY - YYYY format",
+                    "location": "City, Country"
+                }}
 
-                1989 - 1994 Bachelor of Engineering in Hydraulics and Pneumatics
-                Polytechnic University of Bucharest (Bucharest, Romania)
+                Rules:
+                - Maintain all existing fields from input
+                - Standardize date formats to "YYYY - YYYY" or "YYYY - Present"
+                - Keep institution names official and complete
+                - For location:
+                  * Use provided location if available
+                  * If location is missing, try to infer it from the institution name 
+                    (e.g., "University of California, Berkeley" -> "Berkeley, USA")
+                  * Only infer location if you are highly confident about the institution's location
+                  * Do not guess locations for unfamiliar institutions
+                - Order from most recent to oldest
+                - Return only the JSON array with the formatted entries
+
+                Example response format:
+                [
+                    {{
+                        "degree": "Master of Business Administration",
+                        "institution": "Harvard Business School",
+                        "dates": "2018 - 2020",
+                        "location": "Cambridge, USA"
+                    }},
+                    {{
+                        "degree": "Bachelor of Engineering",
+                        "institution": "Indian Institute of Technology Delhi",
+                        "dates": "2014 - 2018",
+                        "location": "New Delhi, India"
+                    }}
+                ]
 
                 IMPORTANT:
-                - Format each education entry as shown in the example
-                - Only include information from the provided education data
-                - Do not add any explanatory text, notes, or headings
-                - Do not include bullet points
-                - Provide only the formatted education entries, nothing else
+                - Only infer locations for well-known institutions where the location is certain
+                - Leave location field empty if cannot be confidently determined
+                - Do not make up or guess any other information
+                - Return a valid JSON array only
                 """
                 
                 response = client.chat.completions.create(
                     model=OPENAI_MODEL,
                     messages=[
-                        {"role": "system", "content": "You are a CV formatting assistant. Format the education section exactly as instructed without adding any additional text or explanations."},
+                        {"role": "system", "content": "You are a data formatting assistant that outputs only valid JSON arrays containing education information."},
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.0  # Use zero temperature for strict formatting
                 )
                 
-                education_text = response.choices[0].message.content
-                
-                # Filter out any lines that contain explanatory text or aren't in the expected format
-                valid_education_entries = []
-                possible_entries = [entry.strip() for entry in education_text.split('\n\n') if entry.strip()]
-                
-                for entry in possible_entries:
-                    # Clean and normalize entry
-                    lines = [line.strip() for line in entry.split('\n') if line.strip()]
-                    
-                    # Skip entries that look like explanatory text
-                    if any(term in ' '.join(lines).lower() for term in ['note:', 'here is', 'format', 'example', 'bullet']):
-                        continue
-                    
-                    # Skip entries with bullet points
-                    if any(line.startswith('•') or line.startswith('●') or line.startswith('-') for line in lines):
-                        continue
-                    
-                    # Check if it has a reasonable structure (at least two lines, first line should contain a year)
-                    if len(lines) >= 2 and re.search(r'\b(19|20)\d{2}\b', lines[0]):
-                        valid_education_entries.append('\n'.join(lines))
-                
-                # If valid entries were found, use them
-                if valid_education_entries:
-                    self.analysis_results.education_formatted = valid_education_entries
-                    logger.debug(f"Formatted {len(valid_education_entries)} education entries")
-            else:
-                # Fallback: Format manually using the raw data
-                fallback_entries = []
-                for edu in education_data:
-                    lines = []
-                    if edu.get("dates") and edu.get("degree"):
-                        lines.append(f"{edu['dates']} {edu['degree']}")
-                    elif edu.get("degree"):
-                        lines.append(edu["degree"])
+                try:
+                    # Parse the response to extract just the JSON array
+                    response_text = response.choices[0].message.content
+                    # Find the JSON array in the response using regex
+                    json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+                    if json_match:
+                        formatted_education = json.loads(json_match.group())
+                        # Validate the structure of each entry
+                        valid_entries = []
+                        for entry in formatted_education:
+                            if isinstance(entry, dict):
+                                valid_entry = {}
+                                if "degree" in entry:
+                                    valid_entry["degree"] = entry["degree"]
+                                if "institution" in entry:
+                                    valid_entry["institution"] = entry["institution"]
+                                if "dates" in entry:
+                                    valid_entry["dates"] = entry["dates"]
+                                if "location" in entry:
+                                    valid_entry["location"] = entry["location"]
+                                if valid_entry:
+                                    valid_entries.append(valid_entry)
                         
-                    location_part = f" ({edu['location']})" if edu.get("location") else ""
-                    if edu.get("institution"):
-                        lines.append(f"{edu['institution']}{location_part}")
-                    
-                    if lines:
-                        fallback_entries.append('\n'.join(lines))
-                
-                if fallback_entries:
-                    self.analysis_results.education_formatted = fallback_entries
-                    logger.debug(f"Used fallback formatting for {len(fallback_entries)} education entries")
+                        if valid_entries:
+                            self.analysis_results.education_formatted = valid_entries
+                            logger.debug(f"Formatted {len(valid_entries)} education entries in structured format")
+                        else:
+                            # Fallback to original data if no valid entries
+                            self.analysis_results.education_formatted = education_data
+                            logger.warning("No valid entries in response, using original data")
+                    else:
+                        # Fallback to original data if no JSON found
+                        self.analysis_results.education_formatted = education_data
+                        logger.warning("No JSON array found in response, using original data")
+                except json.JSONDecodeError:
+                    # Fallback to original data if JSON parsing fails
+                    self.analysis_results.education_formatted = education_data
+                    logger.warning("Failed to parse JSON response, using original data")
         
         # Generate prompt for certifications
         certifications_data = []
