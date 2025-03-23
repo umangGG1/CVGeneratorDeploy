@@ -84,7 +84,7 @@ class AnalysisResults(BaseModel):
     competencies: List[str] = Field(default_factory=list)
     experience_highlights: List[Dict[str, Any]] = Field(default_factory=list)
     achievement_metrics: List[str] = Field(default_factory=list)
-    education_formatted: List[str] = Field(default_factory=list)
+    education_formatted: List[Dict[str, str]] = Field(default_factory=list)
     certifications_formatted: List[str] = Field(default_factory=list)
     languages_formatted: List[str] = Field(default_factory=list)
     interests_formatted: List[str] = Field(default_factory=list)

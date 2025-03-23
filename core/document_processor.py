@@ -177,7 +177,8 @@ class DocumentProcessor:
 
             If a section is not found, include it with an empty array or object as appropriate.
             Extract contact details (email, phone, address, LinkedIn URL, etc.) from anywhere in the CV.
-            For interests/hobbies, look for mentions of personal interests, hobbies, volunteer work, or extracurricular activities throughout the text.
+            For interests/hobbies, look for mentions of personal interests, hobbies, volunteer work, or extracurricular activities throughout the text. Don't be
+            lazy in finding system_tools, additional_sections and achievements sections from the CV.
             
             CV text:
             {text}

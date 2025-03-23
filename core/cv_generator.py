@@ -301,7 +301,19 @@ class CVGenerator:
             
             section = "## EDUCATION\n"
             for edu in education_formatted:
-                section += f"● {edu}\n"
+                # Format each education entry
+                parts = []
+                if edu.get("degree"):
+                    parts.append(edu["degree"])
+                if edu.get("institution"):
+                    parts.append(edu["institution"])
+                if edu.get("dates"):
+                    parts.append(edu["dates"])
+                if edu.get("location"):
+                    parts.append(edu["location"])
+                
+                if parts:
+                    section += f"● {' | '.join(parts)}\n"
             
             return section
         except Exception as e:

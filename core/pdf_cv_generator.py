@@ -165,15 +165,23 @@ class PDFCVGenerator:
             pdf.set_font("Times", '', 11)
             
             try:
-                for edu_text in self.analysis_results.education_formatted:
-                    lines = edu_text.strip().split('\n')
-                    if len(lines) > 1:
+                for edu in self.analysis_results.education_formatted:
+                    # Format institution and location on first line
+                    if edu.get("institution"):
                         pdf.set_font("Times", 'B', 11)
-                        pdf.cell(0, 7, lines[1], ln=True)  # Institution
+                        first_line = edu["institution"]
+                        if edu.get("location"):
+                            first_line += f" | {edu['location']}"
+                        pdf.cell(0, 7, first_line, ln=True)
+                    
+                    # Format degree and dates on second line
+                    if edu.get("degree"):
                         pdf.set_font("Times", '', 11)
-                        pdf.cell(0, 7, lines[0], ln=True)  # Degree
-                    else:
-                        pdf.cell(0, 7, edu_text, ln=True)
+                        second_line = edu["degree"]
+                        if edu.get("dates"):
+                            second_line += f" | {edu['dates']}"
+                        pdf.cell(0, 7, second_line, ln=True)
+                    
                     pdf.ln(2)
             except Exception as e:
                 logger.error(f"Error rendering education section: {str(e)}", exc_info=True)
@@ -491,15 +499,23 @@ class PDFCVGenerator:
             pdf.set_font("Times", '', 11)
             
             try:
-                for edu_text in self.analysis_results.education_formatted[:2]:  # Limit to top 2 educations
-                    lines = edu_text.strip().split('\n')
-                    if len(lines) > 1:
+                for edu in self.analysis_results.education_formatted[:2]:  # Limit to top 2 educations
+                    # Format institution and location on first line
+                    if edu.get("institution"):
                         pdf.set_font("Times", 'B', 11)
-                        pdf.cell(0, 7, lines[1], ln=True)  # Institution
+                        first_line = edu["institution"]
+                        if edu.get("location"):
+                            first_line += f" | {edu['location']}"
+                        pdf.cell(0, 7, first_line, ln=True)
+                    
+                    # Format degree and dates on second line
+                    if edu.get("degree"):
                         pdf.set_font("Times", '', 11)
-                        pdf.cell(0, 7, lines[0], ln=True)  # Degree
-                    else:
-                        pdf.cell(0, 7, edu_text, ln=True)
+                        second_line = edu["degree"]
+                        if edu.get("dates"):
+                            second_line += f" | {edu['dates']}"
+                        pdf.cell(0, 7, second_line, ln=True)
+                    
                     pdf.ln(2)
             except Exception as e:
                 logger.error(f"Error rendering education section in visual CV: {str(e)}", exc_info=True)
