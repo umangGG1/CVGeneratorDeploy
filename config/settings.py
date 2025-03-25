@@ -3,16 +3,21 @@ Configuration settings for the CV generator application.
 """
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
 
 # API Keys
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# OpenAI Config
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
-OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.1"))
+try:
+    OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+    OPENAI_MODEL = st.secrets.get("OPENAI_MODEL", "gpt-4o")
+    OPENAI_TEMPERATURE = float(st.secrets.get("OPENAI_TEMPERATURE", "0.0"))
+except (KeyError, FileNotFoundError):
+    # Fall back to environment variables when not running in Streamlit Cloud
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
+    OPENAI_TEMPERATURE = float(os.environ.get("OPENAI_TEMPERATURE", "0.0"))
 
 # File Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
