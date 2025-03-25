@@ -12,6 +12,7 @@ import logging
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+APP_DIR = Path(__file__).parent
 
 # Set page configuration
 st.set_page_config(
@@ -116,7 +117,7 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
         logger.info(f"Backend output directory: {backend_output_dir}")
         
         # Build command to run CV generator
-        python_executable = r"C:\Users\umang\OneDrive - iitr.ac.in\Desktop\Opguru\Kareem\cv_gen\Scripts\python.exe"
+        python_executable = "python"
         
         # Get the full path to main.py
         main_py_path = os.path.join(current_dir, "main.py")

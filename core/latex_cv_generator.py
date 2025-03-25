@@ -38,7 +38,8 @@ class LaTeXCVGenerator:
         """Get the path to pdflatex executable with validation."""
         if sys.platform == "win32":
             possible_paths = [
-                r"C:\Users\umang\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"
+                r"C:\Users\umang\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe",
+                "pdflatex.exe"  # Add a fallback for simpler path resolution
             ]
 
             for path in possible_paths:
