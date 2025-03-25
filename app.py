@@ -68,6 +68,11 @@ def save_uploaded_file(uploaded_file, temp_dir, filename):
 
 # Function to run the backend CV generator
 def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_path, photo_path):
+    logger.info("Python executable: %s", sys.executable)
+    logger.info("Python version: %s", sys.version)
+    logger.info("Python path: %s", sys.path)
+    logger.info("Current working directory: %s", os.getcwd())
+    logger.info("Directory contents: %s", os.listdir())
     try:
         # Verify input files exist and have content
         for file_path in [linkedin_path, cv_path, transcript_path, goals_path, photo_path]:
