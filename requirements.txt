@@ -12,7 +12,6 @@ numpy
 openai
 pandas
 pydantic==2.10.6
-pydantic_core==2.27.2
 PyPDF2
 python-dateutil
 python-dotenv
@@ -34,5 +33,3 @@ MarkupSafe
 fpdf2
 streamlit
 watchdog
-PyPDF2
-python-dotenv
