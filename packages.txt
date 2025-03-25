@@ -3,3 +3,6 @@ texlive-fonts-recommended
 texlive-fonts-extra
 texlive-latex-extra
 latexmk
+pkg-config
+libcairo2-dev
+python3-dev
