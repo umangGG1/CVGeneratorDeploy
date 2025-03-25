@@ -35,6 +35,8 @@ def parse_arguments() -> argparse.Namespace:
                        default="meeting_transcript.pdf")
     parser.add_argument("--goals", help="Path to professional goals PDF (default: professional_goals.pdf)",
                        default="professional_goals.pdf")
+    parser.add_argument("--photo", help="Path to profile photo (default: profile_photo.jpg)",
+                       default="profile_photo.jpg")
     parser.add_argument("--output", help=f"Output directory (default: {OUTPUT_DIR})")
     parser.add_argument("--format", choices=["md", "pdf", "both"], default="both",
                         help="Output format: markdown only, PDF only, or both (default: both)")
@@ -57,8 +59,8 @@ def main():
         # Initialize workflow
         workflow = CVGenerationWorkflow()
         
-        # Run full workflow
-        standard_cv_pdf, visual_cv_pdf, harvard_cv_pdf = workflow.run_full_workflow()
+        # Run full workflow with photo
+        standard_cv_pdf, visual_cv_pdf, harvard_cv_pdf = workflow.run_full_workflow(photo_path=args.photo)
         
         # Print output file paths based on format choice
         if args.format in ["md", "both"]:

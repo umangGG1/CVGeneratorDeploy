@@ -1,66 +1,135 @@
-\documentclass[11pt]{article}
-\usepackage{graphicx} % Required for inserting images
-\setlength{\parindent}{0pt}
-\usepackage{hyperref}
-\usepackage{enumitem}
-\usepackage[utf8]{inputenc} 
-\usepackage[T1]{fontenc}
-\usepackage[brazil]{babel}
-\usepackage{lipsum}
-\usepackage[left=1.06cm,top=1.7cm,right=1.06cm,bottom=0.49cm]{geometry}
-\usepackage{xcolor}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.2cm]{geometry}
+\usepackage{fontawesome5}
 \usepackage{titlesec}
-\usepackage{fontawesome}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{graphicx}
+\renewcommand{\rmdefault}{phv}
+
+% Disable section numbering globally
+\setcounter{secnumdepth}{-1}
 
 % Define colors
-\definecolor{primary}{RGB}{41, 128, 185}
-\definecolor{secondary}{RGB}{52, 152, 219}
+\definecolor{primary}{RGB}{20,55,110}
+\definecolor{secondary}{RGB}{177,146,21}
+\definecolor{light}{RGB}{220, 220, 220}
 
-% Custom section formatting
+% Formatting adjustments
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+\setlist{itemsep=2pt, topsep=2pt, leftmargin=12pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+% Section formatting - explicitly disable numbering
 \titleformat{\section}
-{\Large\bfseries\color{primary}}
-{}{0em}
-{\vspace{-0.5em}}[\titlerule]
+  {\Large\bfseries\color{primary}}
+  {}
+  {0pt}
+  {\MakeUppercase}[\vspace{-0.1em}]
+
+% Header command
+\newcommand{\cvheader}[5]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[primary] (current page.north west) rectangle ([yshift=-5.5cm]current page.north east);
+    \node[anchor=north west, xshift=0.2cm, yshift=-0.1cm, text width=0.75\paperwidth, align=left] at (current page.north west) {%
+      {\Huge \bfseries \color{white} \MakeUppercase{#1}}\\[2pt]
+      {\small \scshape \color{secondary} #2}\\[4pt]
+      {\footnotesize \color{white} #3}\\[6pt]
+      {\small \color{white} #4}
+    };
+    \node[anchor=north east, xshift=-1cm, yshift=-0.5cm, inner sep=0pt] at (current page.north east) {%
+      % Empty placeholder for profile photo - remove comment if you have a photo
+        \includegraphics[width=4cm, height=4cm, keepaspectratio]{#5}
+    };
+  \end{tikzpicture}
+  \vspace{3.5cm}
+}
+
+% Custom commands
+\newcommand{\sidesection}[1]{%
+  \noindent
+  \raggedright
+  {\Large \color{primary} \bfseries \MakeUppercase{#1}}\\[-2pt]
+  \vspace{2pt}
+}
+
+\newcommand{\cvitem}[1]{\item[\scriptsize$\bullet$] \footnotesize #1}
+\newcommand{\achievementitem}[2]{\item[\footnotesize\textcircled{\footnotesize #1}] \footnotesize #2}
+
+\newcommand{\experienceentry}[4]{
+  {\normalsize\bfseries #1}\\[-1pt]
+  {\footnotesize\textit{#2} \hfill #3}\\
+  \footnotesize 
+  \\
+  #4
+}
+
+\newcommand{\educationentry}[4]{
+  \textbf{#1} \hspace{1em} \textbf{#2} \\
+  \textit{#3} \hspace{0.5em} (#4)
+}
 
 \begin{document}
 
-% Header
-\begin{center}
-    {\Huge\bfseries\color{primary}$name}\\[0.3em]
-    {\large\color{secondary}$contact_info}
-\end{center}
+% ================= HEADER =================
+\cvheader
+{$name} % Name
+{$headline} % Headline
+{$profile} % Summary
+{$contact_info} % Contact
+{profile_photo.jpg} % Profile photo (comment if none)
 
-\vspace{1em}
+% ================= TWO COLUMN LAYOUT =================
+\begin{minipage}[t]{0.35\textwidth}
+\setlength{\parskip}{8pt}
 
-% Profile
-\begin{center}
-    \textit{$profile}
-\end{center}
-
-\vspace{1em}
-
-% Career Achievements
+% ===== LEFT COLUMN =====
 \section*{Career Achievements}
-$achievements
+\begin{itemize}[label={}, leftmargin=0pt]
+  $career_achievements
+\end{itemize}
 
-\vspace{1em}
+\vspace{6pt}
+\makebox[6cm]{\hrulefill}
+\vspace{6pt}
 
-% Experience
-\section*{Experience}
+\section*{Core Skills}
+\begin{itemize}[label={}, leftmargin=0pt]
+  $core_skills
+\end{itemize}
+
+\section*{Competencies}
+\begin{itemize}[label={}, leftmargin=0pt]
+  $competencies
+\end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.63\textwidth}
+
+% ===== RIGHT COLUMN =====
+\section*{Work Experience}
 $experience
 
-\vspace{1em}
+\vspace{6pt}
 
-% Skills
-\section*{Skills \& Competencies}
-$skills
-
-\vspace{1em}
-
-% Education
 \section*{Education}
 $education
 
-$optional_section
+\vspace{6pt}
+
+\section*{Interests}
+\begin{itemize}[label={}, leftmargin=0pt]
+  $interests
+\end{itemize}
+
+\end{minipage}
 
 \end{document} 

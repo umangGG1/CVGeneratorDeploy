@@ -1,0 +1,169 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.2cm]{geometry}
+\usepackage{fontawesome5}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{graphicx}
+\renewcommand{\rmdefault}{phv}
+
+% Disable section numbering globally
+\setcounter{secnumdepth}{-1}
+
+% Define colors
+\definecolor{primary}{RGB}{20,55,110}
+\definecolor{secondary}{RGB}{177,146,21}
+\definecolor{light}{RGB}{220, 220, 220}
+
+% Formatting adjustments
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+\setlist{itemsep=2pt, topsep=2pt, leftmargin=12pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+% Section formatting - explicitly disable numbering
+\titleformat{\section}
+  {\Large\bfseries\color{primary}}
+  {}
+  {0pt}
+  {\MakeUppercase}[\vspace{-0.1em}]
+
+% Header command
+\newcommand{\cvheader}[5]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[primary] (current page.north west) rectangle ([yshift=-5.5cm]current page.north east);
+    \node[anchor=north west, xshift=0.2cm, yshift=-0.1cm, text width=0.75\paperwidth, align=left] at (current page.north west) {%
+      {\Huge \bfseries \color{white} \MakeUppercase{#1}}\\[2pt]
+      {\small \scshape \color{secondary} #2}\\[4pt]
+      {\footnotesize \color{white} #3}\\[6pt]
+      {\small \color{white} #4}
+    };
+    \node[anchor=north east, xshift=-1cm, yshift=-0.5cm, inner sep=0pt] at (current page.north east) {%
+      % Empty placeholder for profile photo - remove comment if you have a photo
+        \includegraphics[width=4cm, height=4cm, keepaspectratio]{#5}
+    };
+  \end{tikzpicture}
+  \vspace{3.5cm}
+}
+
+% Custom commands
+\newcommand{\sidesection}[1]{%
+  \noindent
+  \raggedright
+  {\Large \color{primary} \bfseries \MakeUppercase{#1}}\\[-2pt]
+  \vspace{2pt}
+}
+
+\newcommand{\cvitem}[1]{\item[\scriptsize$\bullet$] \footnotesize #1}
+\newcommand{\achievementitem}[2]{\item[\footnotesize\textcircled{\footnotesize #1}] \footnotesize #2}
+
+\newcommand{\experienceentry}[4]{
+  {\normalsize\bfseries #1}\\[-1pt]
+  {\footnotesize\textit{#2} \hfill #3}\\
+  \footnotesize 
+  \\
+  #4
+}
+
+\newcommand{\educationentry}[4]{
+  \textbf{#1} \hspace{1em} \textbf{#2} \\
+  \textit{#3} \hspace{0.5em} (#4)
+}
+
+\begin{document}
+
+% ================= HEADER =================
+\cvheader
+{Roma Kay} % Name
+{Global Sales Operations Executive | Strategic Leadership in Sales | Expert in IBM Global Programs} % Headline
+{Accomplished professional with extensive experience in global sales operations, currently serving as VP Global Sales Operations at Wesco. Proven track record in the industries of Wesco, Anixter, and GE, with a focus on driving sales growth and operational efficiency.} % Summary
+{Mississauga, Ontario, Canada \textbullet \ \href{https://linkedin.com/in/romakay}{linkedin.com/in/romakay}} % Contact
+{profile_photo.jpg} % Profile photo (comment if none)
+
+% ================= TWO COLUMN LAYOUT =================
+\begin{minipage}[t]{0.35\textwidth}
+\setlength{\parskip}{8pt}
+
+% ===== LEFT COLUMN =====
+\section*{Career Achievements}
+\begin{itemize}[label={}, leftmargin=0pt]
+  \cvitem{Contributed to Wesco's FORTUNE 500® status with \$22 billion sales.}
+  \cvitem{Managed 4 US Program Managers for complex customer requests.}
+  \cvitem{Spearheaded Wesco's product and services portfolio integration.}
+  \cvitem{Facilitated merger, enhancing portfolio with Anixter's expertise.}
+  \cvitem{Achieved and exceeded sales targets consistently.}
+  \cvitem{Spearheaded System Integrator Program with Systimax Solutions.}
+  \cvitem{Headed Global Sales Operations US team for multinational opportunities.}
+  \cvitem{Spearheaded major initiatives within the IBM Global Program.}
+\end{itemize}
+
+\vspace{6pt}
+\makebox[6cm]{\hrulefill}
+\vspace{6pt}
+
+\section*{Core Skills}
+\begin{itemize}[label={}, leftmargin=0pt]
+  \cvitem{**
+- Sales Operations}
+  \cvitem{Account Management}
+  \cvitem{Solution Selling}
+  \cvitem{Financial Sales Forecast}
+\end{itemize}
+
+\section*{Competencies}
+\begin{itemize}[label={}, leftmargin=0pt]
+  \cvitem{Customers In Different}
+\end{itemize}
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.63\textwidth}
+
+% ===== RIGHT COLUMN =====
+\section*{Work Experience}
+\experienceentry{VP Global Sales Operations}{Wesco}{2020 — Present (5 years)}{Spearheaded the integration of Wesco's product and services portfolio, enhancing Electrical and Electronic Solutions, Communications and Security Solutions, and Utility and Broadband Solutions.
+\begin{itemize}[noitemsep, topsep=2pt, partopsep=0pt, parsep=5pt, leftmargin=10pt]
+  \item Collaborated with premier industry suppliers to deliver innovative solutions, meeting diverse customer needs across commercial and industrial sectors.
+  \item Enhanced supply chain services and digital capabilities, supporting thousands of customers globally in various industries including government and telecommunications.
+  \item Contributed to Wesco's position as a FORTUNE 500® company with over \$22 billion in annual sales, driving business-to-business distribution and logistics services.
+\end{itemize}}
+
+\vspace{8pt}
+\experienceentry{Vice President - Global Sales Operations}{Anixter}{2016 — 2020 (4 years)}{Facilitated the merger with Wesco, enhancing the company's portfolio by integrating Anixter's expertise in data communications, security, and wire and cable.
+\begin{itemize}[noitemsep, topsep=2pt, partopsep=0pt, parsep=5pt, leftmargin=10pt]
+  \item Vice President - Global Sales Operations
+  \item Strengthened the combined company's market position by uniting Wesco's industrial, construction, and utility capabilities with Anixter's solutions.
+  \item Contributed to the creation of a comprehensive and balanced portfolio post-merger, aligning strategic goals across both companies.
+\end{itemize}}
+
+\vspace{8pt}
+\experienceentry{Director of Sales - IBM Global Program}{Anixter}{2011 — 2016 (5 years)}{Collaborated with the VP of Sales to develop and drive key initiatives within the IBM Global Program.
+\begin{itemize}[noitemsep, topsep=2pt, partopsep=0pt, parsep=5pt, leftmargin=10pt]
+  \item Coordinated with the VP of Sales and VP of Business Development to budget, forecast, and prepare business plans.
+  \item Facilitated communication with order processing teams globally to address queries, quotes, and order follow-ups.
+  \item Supported North American sales teams by addressing inquiries and resolving pre and post-sales issues.
+\end{itemize}}
+
+\vspace{6pt}
+
+\section*{Education}
+\educationentry{1986 - 1989}{Bachelor degree in Commerce with Financial Accounting and Auditing}{Bombay University}{Mumbai, India}
+
+\vspace{6pt}
+
+\section*{Interests}
+\begin{itemize}[label={}, leftmargin=0pt]
+  \cvitem{Avid runner}
+  \cvitem{Adventurous}
+  \cvitem{Fitness fanatic}
+\end{itemize}
+
+\end{minipage}
+
+\end{document} 

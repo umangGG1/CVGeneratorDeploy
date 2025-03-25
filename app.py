@@ -60,10 +60,10 @@ def save_uploaded_file(uploaded_file, temp_dir, filename):
         return None
 
 # Function to run the backend CV generator
-def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_path):
+def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_path, photo_path):
     try:
         # Verify input files exist and have content
-        for file_path in [linkedin_path, cv_path, transcript_path, goals_path]:
+        for file_path in [linkedin_path, cv_path, transcript_path, goals_path, photo_path]:
             if file_path and os.path.exists(file_path):
                 file_size = os.path.getsize(file_path)
                 logger.info(f"Input file {os.path.basename(file_path)} exists with size: {file_size} bytes")
@@ -105,6 +105,11 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
             backend_files["goals"] = os.path.join(current_dir, "professional_goals.pdf")
             shutil.copy2(goals_path, backend_files["goals"])
             logger.info(f"Copied goals to: {backend_files['goals']}")
+            
+        if photo_path:
+            backend_files["photo"] = os.path.join(current_dir, "profile_photo.jpg")
+            shutil.copy2(photo_path, backend_files["photo"])
+            logger.info(f"Copied profile photo to: {backend_files['photo']}")
         
         # Debug: Print the output directories
         logger.info(f"Temp output directory: {temp_output_dir}")
@@ -119,7 +124,7 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
         if not os.path.exists(main_py_path):
             logger.error(f"main.py not found at: {main_py_path}")
             st.error("Error: main.py not found. Please check the installation.")
-            return None
+            return None, None
             
         cmd = [python_executable, main_py_path]
         
@@ -132,6 +137,8 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
             cmd.extend(["--transcript", "meeting_transcript.pdf"])
         if "goals" in backend_files:
             cmd.extend(["--goals", "professional_goals.pdf"])
+        if "photo" in backend_files:
+            cmd.extend(["--photo", "profile_photo.jpg"])
         
         # Use the output directory from the backend
         cmd.extend(["--output", "output"])
@@ -170,7 +177,7 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
         if process.returncode != 0:
             logger.error(f"Process failed with return code: {process.returncode}")
             st.error(f"Error generating CV: {stderr}")
-            return None
+            return None, None
         
         # Look for PDFs in the backend output directory
         logger.info("Checking output directory for generated PDFs")
@@ -180,31 +187,51 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
             if file.endswith('.pdf'):
                 pdf_files.append(file)
         
-        # Check for Harvard CV PDF in different naming patterns
+        # Check for Harvard CV and Visual CV PDFs in different naming patterns
         harvard_cv_path = None
-        possible_files = [
+        visual_cv_path = None
+        possible_harvard_files = [
             "harvard_cv.pdf", 
             "harvard_cv_pdf.pdf", 
             "standard_cv.pdf", 
             "standard_cv_pdf.pdf"
         ]
+        possible_visual_files = [
+            "visual_cv.pdf",
+            "visual_cv_pdf.pdf",
+            "modern_cv.pdf",
+            "modern_cv_pdf.pdf"
+        ]
         
-        for file_name in possible_files:
+        for file_name in possible_harvard_files:
             if file_name in pdf_files:
                 harvard_cv_path = os.path.join(backend_output_dir, file_name)
                 logger.info(f"Found Harvard CV: {file_name}")
                 st.success(f"Found Harvard CV: {file_name}")
                 break
+                
+        for file_name in possible_visual_files:
+            if file_name in pdf_files:
+                visual_cv_path = os.path.join(backend_output_dir, file_name)
+                logger.info(f"Found Visual CV: {file_name}")
+                st.success(f"Found Visual CV: {file_name}")
+                break
         
-        # If no specific file found, use the first PDF
+        # If no specific files found, use the first two PDFs
         if not harvard_cv_path and pdf_files:
             harvard_cv_path = os.path.join(backend_output_dir, pdf_files[0])
             logger.info(f"Using {pdf_files[0]} as the Harvard CV PDF")
             st.info(f"Using {pdf_files[0]} as the Harvard CV PDF")
+            
+        if not visual_cv_path and len(pdf_files) > 1:
+            visual_cv_path = os.path.join(backend_output_dir, pdf_files[1])
+            logger.info(f"Using {pdf_files[1]} as the Visual CV PDF")
+            st.info(f"Using {pdf_files[1]} as the Visual CV PDF")
         
+        # Display PDFs if they exist, regardless of backend completion status
         if harvard_cv_path and os.path.exists(harvard_cv_path):
             file_size = os.path.getsize(harvard_cv_path)
-            logger.info(f"Final CV file size: {file_size} bytes")
+            logger.info(f"Final Harvard CV file size: {file_size} bytes")
             
             # Clean up the copied files
             for file_path in backend_files.values():
@@ -215,11 +242,11 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
                 except Exception as e:
                     logger.warning(f"Failed to clean up temporary file {file_path}: {str(e)}")
             
-            return harvard_cv_path
+            return harvard_cv_path, visual_cv_path
         else:
             logger.error("Harvard CV PDF not found or doesn't exist")
             st.error("Harvard CV PDF not found or doesn't exist")
-            return None
+            return None, None
             
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
@@ -227,21 +254,42 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
         logger.error(traceback.format_exc())
         st.error(f"An error occurred: {str(e)}")
         st.code(traceback.format_exc(), language="python")
-        return None
+        return None, None
 
 # Function to display PDF
 def display_pdf(file_path):
     try:
+        logger.info(f"Attempting to display PDF: {file_path}")
+        
+        # First try using st.pdf_viewer (new Streamlit method)
+        try:
+            with open(file_path, "rb") as f:
+                pdf_bytes = f.read()
+            st.pdf_viewer(pdf_bytes, width=700, height=1000)
+            logger.info(f"Successfully displayed PDF using st.pdf_viewer: {file_path}")
+            return
+        except Exception as e:
+            logger.warning(f"st.pdf_viewer failed, falling back to alternative method: {str(e)}")
+        
+        # Fallback method using base64 encoding
         with open(file_path, "rb") as f:
             base64_pdf = base64.b64encode(f.read()).decode('utf-8')
         
-        # Embed PDF viewer
+        # Try using object tag first
         pdf_display = f"""
-        <iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>
+            <object data="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="700" height="1000">
+                <embed src="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="700" height="1000" />
+            </object>
         """
+        
         st.markdown(pdf_display, unsafe_allow_html=True)
+        logger.info(f"Successfully displayed PDF using fallback method: {file_path}")
     except Exception as e:
+        logger.error(f"Error displaying PDF {file_path}: {str(e)}")
         st.error(f"Error displaying PDF: {str(e)}")
+        # Add a direct download link as last resort
+        st.markdown(get_download_link(file_path, os.path.basename(file_path)), unsafe_allow_html=True)
+        st.info("If the PDF is not displaying properly, please use the download link above to view it.")
 
 # Function to create download link for PDF
 def get_download_link(file_path, filename):
@@ -271,10 +319,15 @@ def main():
     with col1:
         linkedin_file = st.file_uploader("LinkedIn Profile PDF", type=["pdf"], key="linkedin")
         transcript_file = st.file_uploader("Meeting Transcript PDF", type=["pdf"], key="transcript")
+        photo_file = st.file_uploader("Profile Photo", type=["jpg", "jpeg", "png"], key="photo")
     
     with col2:
         cv_file = st.file_uploader("Current CV PDF", type=["pdf"], key="cv")
         goals_file = st.file_uploader("Professional Goals PDF", type=["pdf"], key="goals")
+    
+    # Show preview of uploaded photo if available
+    if photo_file:
+        st.image(photo_file, caption="Profile Photo Preview", width=200)
     
     # Generate button
     if st.button("Generate CV", type="primary"):
@@ -317,6 +370,13 @@ def main():
                 st.success("Professional goals saved successfully")
             else:
                 st.error("Failed to save professional goals")
+                
+        if photo_file:
+            file_paths["photo"] = save_uploaded_file(photo_file, temp_dir, "profile_photo.jpg")
+            if file_paths["photo"]:
+                st.success("Profile photo saved successfully")
+            else:
+                st.error("Failed to save profile photo")
         
         # Check if any files were successfully saved
         if not any(file_paths.values()):
@@ -324,28 +384,44 @@ def main():
             return
         
         # Run CV generator
-        harvard_cv_path = run_cv_generator(
+        harvard_cv_path, visual_cv_path = run_cv_generator(
             temp_dir,
             file_paths.get("linkedin"),
             file_paths.get("cv"),
             file_paths.get("transcript"),
-            file_paths.get("goals")
+            file_paths.get("goals"),
+            file_paths.get("photo")
         )
         
-        if harvard_cv_path:
-            st.success(f"CV generated successfully at: {harvard_cv_path}")
+        # Create tabs for different CVs if any PDFs were generated
+        if harvard_cv_path or visual_cv_path:
+            st.success("CVs generated successfully!")
             
-            # Display download link
-            st.markdown(
-                get_download_link(harvard_cv_path, "Harvard_CV.pdf"),
-                unsafe_allow_html=True
-            )
+            tab1, tab2 = st.tabs(["Harvard CV", "Visual CV"])
             
-            # Display the PDF
-            st.subheader("Generated Harvard CV")
-            display_pdf(harvard_cv_path)
+            with tab1:
+                st.subheader("Harvard Format CV")
+                if harvard_cv_path and os.path.exists(harvard_cv_path):
+                    file_size = os.path.getsize(harvard_cv_path)
+                    logger.info(f"Displaying Harvard CV - Size: {file_size} bytes")
+                    st.markdown(get_download_link(harvard_cv_path, "Harvard_CV.pdf"), unsafe_allow_html=True)
+                    display_pdf(harvard_cv_path)
+                else:
+                    st.info("Harvard CV was not generated or not found.")
+                    logger.warning(f"Harvard CV path invalid: {harvard_cv_path}")
+            
+            with tab2:
+                st.subheader("Visual Format CV")
+                if visual_cv_path and os.path.exists(visual_cv_path):
+                    file_size = os.path.getsize(visual_cv_path)
+                    logger.info(f"Displaying Visual CV - Size: {file_size} bytes")
+                    st.markdown(get_download_link(visual_cv_path, "Visual_CV.pdf"), unsafe_allow_html=True)
+                    display_pdf(visual_cv_path)
+                else:
+                    st.info("Visual CV was not generated or not found.")
+                    logger.warning(f"Visual CV path invalid: {visual_cv_path}")
         else:
-            st.error("Failed to generate CV. Please check the logs for details.")
+            st.error("No CVs were generated. Please check the logs for details.")
 
 # Run the app
 if __name__ == "__main__":

@@ -98,6 +98,7 @@ class ContentAnalyzer:
         - Use ONLY information provided about the candidate
         - Do not make up or assume additional information
         - Ensure titles are modern and impactful
+        - Keep in mind o not add numbering to the headline options
         """
         
         response = client.chat.completions.create(
@@ -406,6 +407,7 @@ class ContentAnalyzer:
             - Use ONLY information directly provided in the description or achievements
             - If specific metrics aren't available, focus on the scope of responsibility and impact without inventing numbers
             - Format each bullet to start with ●
+            - Keep in mind to not add the job title as a single achievement bullet point.
             """
             
             response = client.chat.completions.create(

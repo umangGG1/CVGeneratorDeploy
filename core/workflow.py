@@ -3,6 +3,7 @@ Main workflow orchestrator for CV generation process.
 """
 import os
 import json
+import shutil
 from typing import Dict, List, Any, Optional, Tuple
 
 from models.data_models import ExtractedData, TranscriptInsights, GoalsData, AnalysisResults
@@ -156,7 +157,7 @@ class CVGenerationWorkflow:
     #         logger.error(f"Error generating PDF CVs: {str(e)}", exc_info=True)
     #         raise
     
-    def run_full_workflow(self) -> Tuple[str, str]:
+    def run_full_workflow(self, photo_path: str = None) -> Tuple[str, str]:
         """
         Run the complete workflow from document processing to CV generation.
             
@@ -178,6 +179,13 @@ class CVGenerationWorkflow:
             # Step 3: Generate CVs using LaTeX generator
             from core.latex_cv_generator import LaTeXCVGenerator
             latex_generator = LaTeXCVGenerator(analysis_results, self.document_processor.extracted_data)
+            
+            # Copy photo to output directory if provided
+            if photo_path and os.path.exists(photo_path):
+                photo_dest = os.path.join(OUTPUT_DIR, "profile_photo.jpg")
+                shutil.copy2(photo_path, photo_dest)
+                logger.info(f"Copied profile photo to: {photo_dest}")
+            
             standard_cv_pdf, visual_cv_pdf, harvard_cv_pdf = latex_generator.generate_cvs()
             
             # Step 4: Save processed data to JSON file
