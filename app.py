@@ -390,11 +390,11 @@ def main():
             st.error("No files were successfully saved. Please try uploading again.")
             return
         
-        print("Python executable:", sys.executable)
-        print("Python version:", sys.version)
-        print("Python path:", sys.path)
-        print("Current working directory:", os.getcwd())
-        print("Directory contents:", os.listdir())
+        logger.info("Python executable: %s", sys.executable)
+        logger.info("Python version: %s", sys.version)
+        logger.info("Python path: %s", sys.path)
+        logger.info("Current working directory: %s", os.getcwd())
+        logger.info("Directory contents: %s", os.listdir())
         
         # Run CV generator
         harvard_cv_path, visual_cv_path = run_cv_generator(
