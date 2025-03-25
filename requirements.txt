@@ -11,8 +11,8 @@ jiter
 numpy
 openai
 pandas
-pydantic
-pydantic_core
+pydantic==2.10.6
+pydantic_core==2.27.2
 PyPDF2
 python-dateutil
 python-dotenv
