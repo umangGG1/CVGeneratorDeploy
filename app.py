@@ -8,12 +8,7 @@ import base64
 import sys
 import shutil
 import logging
-import pkg_resources
-try:
-    import pydantic
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pydantic"])
-    import pydantic
+import importlib.metadata
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -74,7 +69,8 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
     logger.info("Python path: %s", sys.path)
     logger.info("Current working directory: %s", os.getcwd())
     logger.info("Directory contents: %s", os.listdir())
-    logger.info("Installed packages: %s", [p.key for p in pkg_resources.working_set])
+    logger.info("Installed packages: %s", [dist.metadata['Name'].lower() for dist in importlib.metadata.distributions()])
+    
     try:
         # Verify input files exist and have content
         for file_path in [linkedin_path, cv_path, transcript_path, goals_path, photo_path]:
@@ -130,7 +126,7 @@ def run_cv_generator(temp_dir, linkedin_path, cv_path, transcript_path, goals_pa
         logger.info(f"Backend output directory: {backend_output_dir}")
         
         # Build command to run CV generator
-        python_executable = "python"
+        python_executable = sys.executable
         
         # Get the full path to main.py
         main_py_path = os.path.join(current_dir, "main.py")
