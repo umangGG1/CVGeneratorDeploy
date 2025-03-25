@@ -8,11 +8,17 @@ import base64
 import sys
 import shutil
 import logging
+try:
+    import pydantic
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pydantic"])
+    import pydantic
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 APP_DIR = Path(__file__).parent
+
 
 # Set page configuration
 st.set_page_config(
