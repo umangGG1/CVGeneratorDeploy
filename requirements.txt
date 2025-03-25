@@ -33,3 +33,4 @@ MarkupSafe
 fpdf2
 streamlit
 watchdog
+setuptools
